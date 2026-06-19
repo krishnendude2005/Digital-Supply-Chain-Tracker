@@ -13,7 +13,7 @@ import java.time.LocalDate;
 public class Shipment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private Long id;
 
 
     @ManyToOne

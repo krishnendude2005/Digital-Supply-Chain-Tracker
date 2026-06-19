@@ -25,6 +25,7 @@ public class UserController {
                 );
     }
 
+    @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody UserLogin request) {
 
         return ResponseEntity.status(HttpStatus.OK).
