@@ -2,6 +2,8 @@ package com.SupplyChain.DigitalSupplyChainTracker.controller;
 
 import com.SupplyChain.DigitalSupplyChainTracker.dto.response.AddItem;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.Item;
+import com.SupplyChain.DigitalSupplyChainTracker.service.ItemService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,32 +13,38 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/items")
+@RequiredArgsConstructor
 public class ItemController {
+
+    private final ItemService itemService;
 
     // Get all items
     @GetMapping("/items")
     public ResponseEntity<?> getItems() {
-        List<Item> items = new ArrayList<>();
-        //TODO: call service method to get all the items
-
+        List<Item> items = itemService.getAllItems();
         return ResponseEntity.status(HttpStatus.OK).body(items);
+    }
+
+    // Get item by ID
+    @GetMapping("/item/{id}")
+    public ResponseEntity<?> getItemById(Long id) {
+       Item item = itemService.getItemById(id);
+       return ResponseEntity.status(HttpStatus.OK).body(item);
     }
 
     // Create an item
     @PostMapping("/item")
     public ResponseEntity<?> addItem(@RequestBody Item item) {
 
-        //todo: call service method to add the item and it will return the item
-        return ResponseEntity.status(HttpStatus.CREATED).body(
-                new AddItem(item.getName(), "item created successfully")
-        );
+       Item savedItem = itemService.addItem(item);
+       return ResponseEntity.status(HttpStatus.CREATED).body(savedItem);
     }
 
     // update an existing item through id
     @PutMapping("/item")
     public ResponseEntity<?> updateItem(@RequestBody Item item) {
 
-        Item existingItem = new Item(); //TODO: call service method to get the item by id
+        Item existingItem = itemService.getItemById(item.getId());
 
         existingItem.setName(item.getName());
         existingItem.setCategory(item.getCategory());
@@ -48,8 +56,8 @@ public class ItemController {
     }
 
     @DeleteMapping("/item")
-    public ResponseEntity<?> deleteItem(@RequestParam int itemId) {
-        //todo: call service method to delete the item by id
+    public ResponseEntity<?> deleteItem(@RequestParam Long itemId) {
+        itemService.deleteItem(itemId);
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
                 .body("item deleted successfully");

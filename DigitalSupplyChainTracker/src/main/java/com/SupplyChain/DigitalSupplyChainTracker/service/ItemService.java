@@ -9,5 +9,5 @@ public interface ItemService {
     Item addItem(Item item);
     Item updateItem(Item item);
     void deleteItem(Long id);
-
+    Item getItemById(Long id);
 }
