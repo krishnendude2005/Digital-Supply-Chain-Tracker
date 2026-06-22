@@ -19,21 +19,21 @@ public class ItemController {
     private final ItemService itemService;
 
     // Get all items
-    @GetMapping("/items")
+    @GetMapping
     public ResponseEntity<?> getItems() {
         List<Item> items = itemService.getAllItems();
         return ResponseEntity.status(HttpStatus.OK).body(items);
     }
 
     // Get item by ID
-    @GetMapping("/item/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<?> getItemById(Long id) {
        Item item = itemService.getItemById(id);
        return ResponseEntity.status(HttpStatus.OK).body(item);
     }
 
     // Create an item
-    @PostMapping("/item")
+    @PostMapping
     public ResponseEntity<?> addItem(@RequestBody Item item) {
 
        Item savedItem = itemService.addItem(item);
@@ -55,7 +55,7 @@ public class ItemController {
         );
     }
 
-    @DeleteMapping("/item")
+    @DeleteMapping
     public ResponseEntity<?> deleteItem(@RequestParam Long itemId) {
         itemService.deleteItem(itemId);
         return ResponseEntity
