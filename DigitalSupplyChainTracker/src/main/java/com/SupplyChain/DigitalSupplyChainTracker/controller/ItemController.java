@@ -63,4 +63,11 @@ public class ItemController {
                 .body("item deleted successfully");
     }
 
+    // search items based on category
+    @GetMapping("/item")
+    public ResponseEntity<?> searchedItem(@RequestParam(name = "category") String category) {
+        List<Item> items = itemService.searchedItem(category);
+        return ResponseEntity.status(HttpStatus.OK).body(items);
+    }
+
 }

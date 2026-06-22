@@ -46,4 +46,9 @@ public class ItemServiceImpl implements ItemService {
                 new ResourceNotFoundException("Item not found with id: " + id)
         );
     }
+
+    @Override
+    public List<Item> searchedItem(String category) {
+        return itemRepo.findByCategory(category);
+    }
 }
