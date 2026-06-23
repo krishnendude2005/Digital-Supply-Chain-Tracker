@@ -14,13 +14,14 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody UserRegister request) {
-     // call service to register user
+
+        //TODO: call service to register user
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body( new com.SupplyChain.DigitalSupplyChainTracker.dto.response.UserRegister(
-                        "User registered successfully",
-                        Role.SUPPLIER //TODO: replace with actual role
+                .body(new com.SupplyChain.DigitalSupplyChainTracker.dto.response.UserRegister(
+                                "User registered successfully",
+                                Role.SUPPLIER //TODO: replace with actual role
                         )
                 );
     }
@@ -36,6 +37,13 @@ public class UserController {
                         )
                 );
 
+    }
+
+    // Admin can check all users
+    @GetMapping
+    public ResponseEntity<?> getAllUsers() {
+        //todo return all users
+        return ResponseEntity.status(HttpStatus.OK).body("All users");
     }
 
 
