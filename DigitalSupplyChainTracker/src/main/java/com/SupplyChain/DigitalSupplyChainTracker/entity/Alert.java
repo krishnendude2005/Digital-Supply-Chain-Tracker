@@ -15,6 +15,8 @@ public class Alert {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String alertId; // Java(accessible) Side ID
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "checkpoint_log_id")
     private CheckpointLog checkpointLog;

@@ -14,6 +14,8 @@ public class Item {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String itemId; // Java(accessible) Side ID
+
     private String name;
 
     private String category;
@@ -22,5 +24,5 @@ public class Item {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "supplier_id")
-    private User supplier;
+    private UserEntity supplier;
 }

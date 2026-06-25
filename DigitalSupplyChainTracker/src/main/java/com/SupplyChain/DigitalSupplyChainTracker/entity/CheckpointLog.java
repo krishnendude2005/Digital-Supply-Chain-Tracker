@@ -16,6 +16,8 @@ public class CheckpointLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String checkpointId; // Java(accessible) Side ID
+
     private String location;
 
     private ItemStatus itemStatus;

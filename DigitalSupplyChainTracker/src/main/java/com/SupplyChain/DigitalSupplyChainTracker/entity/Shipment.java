@@ -15,6 +15,8 @@ public class Shipment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    private String shipmentId; // Java(accessible) Side ID
+
 
     @ManyToOne
     @JoinColumn(name = "item_id")

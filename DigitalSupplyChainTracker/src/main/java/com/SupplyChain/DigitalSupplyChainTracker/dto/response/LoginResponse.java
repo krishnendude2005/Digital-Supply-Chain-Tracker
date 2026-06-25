@@ -1,15 +1,16 @@
 package com.SupplyChain.DigitalSupplyChainTracker.dto.response;
 
 import com.SupplyChain.DigitalSupplyChainTracker.entity.enums.Role;
-import lombok.*;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
-public class UserRegisterResponse {
-    private String email;
+public class LoginResponse {
+    private String token;
     private Role role;
-    private String name;
+    private String email;
+
 }
