@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface ItemRepo extends JpaRepository<Item, Long> {
   List<Item> findByCategory(String category);
+  List<Item> findBySupplier(String supplier);
 }
 

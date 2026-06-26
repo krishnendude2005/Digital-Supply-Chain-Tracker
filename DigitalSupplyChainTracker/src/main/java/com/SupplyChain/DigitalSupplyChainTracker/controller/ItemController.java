@@ -1,11 +1,15 @@
 package com.SupplyChain.DigitalSupplyChainTracker.controller;
 
+import com.SupplyChain.DigitalSupplyChainTracker.dto.request.AddItemRequest;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.response.AddItem;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.Item;
 import com.SupplyChain.DigitalSupplyChainTracker.service.ItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -21,7 +25,9 @@ public class ItemController {
     // Get all items
     @GetMapping
     public ResponseEntity<?> getItems() {
-        List<Item> items = itemService.getAllItems();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        List<Item> items = itemService.getAllItems(authentication);
         return ResponseEntity.status(HttpStatus.OK).body(items);
     }
 
@@ -32,9 +38,10 @@ public class ItemController {
        return ResponseEntity.status(HttpStatus.OK).body(item);
     }
 
-    // Create an item
+    // Create an item (Only for SUPPLIER and ADMIN)
     @PostMapping
-    public ResponseEntity<?> addItem(@RequestBody Item item) {
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPPLIER')")
+    public ResponseEntity<?> addItem(@RequestBody AddItemRequest item) {
 
        Item savedItem = itemService.addItem(item);
        return ResponseEntity.status(HttpStatus.CREATED).body(savedItem);
