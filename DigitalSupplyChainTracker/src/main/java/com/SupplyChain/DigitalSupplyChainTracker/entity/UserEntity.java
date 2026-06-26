@@ -1,10 +1,7 @@
 package com.SupplyChain.DigitalSupplyChainTracker.entity;
 
 import com.SupplyChain.DigitalSupplyChainTracker.entity.enums.Role;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.util.UUID;
@@ -26,5 +23,7 @@ public class UserEntity {
     private String name;
     private String email;
     private String password;
+
+    @Enumerated(EnumType.STRING)
     private Role role;
 }
