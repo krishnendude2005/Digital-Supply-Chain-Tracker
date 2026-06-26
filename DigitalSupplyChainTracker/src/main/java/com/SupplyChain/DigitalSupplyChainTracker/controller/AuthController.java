@@ -1,7 +1,6 @@
 package com.SupplyChain.DigitalSupplyChainTracker.controller;
 
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.LoginRequest;
-import com.SupplyChain.DigitalSupplyChainTracker.dto.request.RegisterRequest;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.response.LoginResponse;
 import com.SupplyChain.DigitalSupplyChainTracker.service.AuthService;
 import lombok.RequiredArgsConstructor;
