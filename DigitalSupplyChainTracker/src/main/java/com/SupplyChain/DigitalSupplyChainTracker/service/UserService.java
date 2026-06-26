@@ -12,4 +12,5 @@ import java.util.List;
 public interface UserService {
     UserRegisterResponse register(UserRegisterRequest registerRequest);
     List<UserEntity> getAllUsers();
+    UserEntity changeRole(String role, Long id);
 }

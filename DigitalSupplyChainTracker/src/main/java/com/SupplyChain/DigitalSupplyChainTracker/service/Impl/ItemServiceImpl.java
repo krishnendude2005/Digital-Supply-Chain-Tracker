@@ -54,8 +54,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public Item addItem(AddItemRequest item) {
 
-        //1. Get the supplier from DB
-
+        //Get the supplier from DB
         UserEntity supplier = userRepo.findByEmail(item.getSupplierEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("Supplier not found with email: " + item.getSupplierEmail()));
 

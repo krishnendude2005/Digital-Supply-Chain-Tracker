@@ -5,6 +5,8 @@ import com.SupplyChain.DigitalSupplyChainTracker.dto.request.UserRegisterRequest
 import com.SupplyChain.DigitalSupplyChainTracker.dto.response.LoginResponse;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.response.UserRegisterResponse;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.UserEntity;
+import com.SupplyChain.DigitalSupplyChainTracker.entity.enums.Role;
+import com.SupplyChain.DigitalSupplyChainTracker.exception.UserNotFoundException;
 import com.SupplyChain.DigitalSupplyChainTracker.repository.UserRepo;
 import com.SupplyChain.DigitalSupplyChainTracker.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -60,5 +62,16 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserEntity> getAllUsers() {
         return userRepo.findAll();
+    }
+
+    @Override
+    public UserEntity changeRole(String role, Long id) {
+
+        UserEntity user = userRepo.findById(id)
+                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
+
+        user.setRole(Role.valueOf(role.toUpperCase()));
+
+        return userRepo.save(user);
     }
 }

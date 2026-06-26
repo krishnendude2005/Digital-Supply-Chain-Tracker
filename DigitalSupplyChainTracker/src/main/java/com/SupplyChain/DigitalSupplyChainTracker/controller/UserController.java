@@ -7,12 +7,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@EnableMethodSecurity
 public class UserController {
 
     private final UserServiceImpl userService;
@@ -36,6 +38,17 @@ public class UserController {
         List<UserEntity> allUsers = userService.getAllUsers();
         return ResponseEntity.status(HttpStatus.OK).body(allUsers);
     }
+
+    //Change Role
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/admin/users/{id}/role")
+    public ResponseEntity<?> changeRole(String role, @PathVariable Long id) {
+        UserEntity changedRoleUser = userService.changeRole(role, id);
+
+        return ResponseEntity.status(HttpStatus.OK).body(changedRoleUser);
+    }
+
+
 
 
 }
