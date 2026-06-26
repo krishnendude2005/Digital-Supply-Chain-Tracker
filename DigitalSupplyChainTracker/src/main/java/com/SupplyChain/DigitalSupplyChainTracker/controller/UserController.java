@@ -12,13 +12,13 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/auth/users")
 @RequiredArgsConstructor
 public class UserController {
 
     private final UserServiceImpl userService;
 
-    @PostMapping("/register")
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/admin/register")
     public ResponseEntity<?> registerUser(@RequestBody UserRegisterRequest request) {
 
         userService.register(request);
@@ -31,7 +31,7 @@ public class UserController {
 
     // Admin can check all users
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping
+    @GetMapping("/users")
     public ResponseEntity<?> getAllUsers() {
         List<UserEntity> allUsers = userService.getAllUsers();
         return ResponseEntity.status(HttpStatus.OK).body(allUsers);
