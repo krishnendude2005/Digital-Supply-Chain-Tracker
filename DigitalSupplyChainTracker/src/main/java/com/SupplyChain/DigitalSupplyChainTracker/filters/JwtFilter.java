@@ -46,8 +46,12 @@ private final JwtUtils jwtUtils;
         if(userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
             UserDetails userDetails = customUserDetailsService.loadUserByUsername(userEmail);
+
             //Validate JWT token
-            jwtUtils.isValidToken(jwtToken, userDetails);
+            if(!jwtUtils.isValidToken(jwtToken, userDetails)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
 
             //Create the authentication token
             UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
