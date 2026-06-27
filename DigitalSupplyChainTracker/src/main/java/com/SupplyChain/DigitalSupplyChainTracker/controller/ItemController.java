@@ -38,7 +38,7 @@ public class ItemController {
        return ResponseEntity.status(HttpStatus.OK).body(item);
     }
 
-    // Create an item (Only for SUPPLIER and ADMIN)
+    // Create an item (Only for SUPPLIER and ADMIN) todo: Need to decide if ADMIN can create item
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPPLIER')")
     public ResponseEntity<?> addItem(@RequestBody AddItemRequest item) {

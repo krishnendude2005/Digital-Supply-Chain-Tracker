@@ -10,6 +10,7 @@ import com.SupplyChain.DigitalSupplyChainTracker.repository.UserRepo;
 import com.SupplyChain.DigitalSupplyChainTracker.service.ItemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -54,16 +55,19 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public Item addItem(AddItemRequest item) {
 
-        //Get the supplier from DB
-        UserEntity supplier = userRepo.findByEmail(item.getSupplierEmail())
-                .orElseThrow(() -> new ResourceNotFoundException("Supplier not found with email: " + item.getSupplierEmail()));
+        //Get the supplier from DB. Using the Currently logged-in user
+        String currentLoggedInUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        assert currentLoggedInUserEmail != null;
+
+        UserEntity currentLoggedInUser = userRepo.findByEmail(currentLoggedInUserEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + currentLoggedInUserEmail));
 
         Item itemToSave = Item.builder()
                 .name(item.getName())
                 .itemId(UUID.randomUUID().toString())
                 .category(item.getCategory())
                 .createdDate(LocalDateTime.now())
-                .supplier(supplier)
+                .supplier(currentLoggedInUser)
                 .build();
 
         return itemRepo.save(itemToSave);

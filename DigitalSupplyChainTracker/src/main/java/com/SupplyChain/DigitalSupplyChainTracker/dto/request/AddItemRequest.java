@@ -9,5 +9,4 @@ import lombok.Setter;
 public class AddItemRequest {
     private String name;
     private String category;
-    private String supplierEmail;
 }
