@@ -25,5 +25,5 @@ public class UserEntity {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    private Role role;
+    private Role role; //todo: In-Future, an user can have multiple roles.
 }

@@ -28,7 +28,7 @@ public class ItemServiceImpl implements ItemService {
     public List<Item> getAllItems(Authentication authentication) {
 
         //Authentication validation
-        if(authentication == null) {
+        if (authentication == null || !authentication.isAuthenticated()) {
             return List.of();
         }
 
@@ -39,17 +39,36 @@ public class ItemServiceImpl implements ItemService {
                 .toList();
 
         // Based on the user's role, fetch items from the appropriate repository
-        if(roles.contains(("ROLE_" + Role.ADMIN.name() ))) {
-            return itemRepo.findAll();
+//        if (roles.contains(("ROLE_" + Role.ADMIN.name()))) {
+//            return itemRepo.findAll();
+//        }
+//
+//        if (roles.contains("ROLE_" + Role.SUPPLIER.name())) {
+//            String supplier = authentication.getName();
+//            return itemRepo.findBySupplier(supplier);
+//        }
+
+        String authority = authentication.getAuthorities()
+                .iterator()
+                .next()
+                .getAuthority();
+        assert authority != null;
+
+        switch (authority) {
+            case "ROLE_ADMIN":
+                return itemRepo.findAll();
+
+            case "ROLE_SUPPLIER":
+                String supplierEmail = authentication.getName();
+                return itemRepo.findBySupplier(supplierEmail);
+
+
+            default:
+                return List.of();
+
         }
 
-        if(roles.contains("ROLE_"+ Role.SUPPLIER.name())) {
-         String supplier = authentication.getName();
-         return itemRepo.findBySupplier(supplier);
-        }
 
-        // Default case: No specific role found, return an empty list
-        return List.of();
     }
 
     @Override
