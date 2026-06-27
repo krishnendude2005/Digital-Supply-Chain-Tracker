@@ -33,10 +33,10 @@ public class ItemServiceImpl implements ItemService {
         }
 
         //Extract the user's role and email from the authentication object
-        List<String> roles = authentication.getAuthorities()
-                .stream()
-                .map(item -> item.getAuthority())
-                .toList();
+//        List<String> roles = authentication.getAuthorities()
+//                .stream()
+//                .map(item -> item.getAuthority())
+//                .toList();
 
         // Based on the user's role, fetch items from the appropriate repository
 //        if (roles.contains(("ROLE_" + Role.ADMIN.name()))) {
