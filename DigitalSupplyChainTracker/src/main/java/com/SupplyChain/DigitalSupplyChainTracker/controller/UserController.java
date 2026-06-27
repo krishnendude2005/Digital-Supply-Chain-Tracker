@@ -1,5 +1,6 @@
 package com.SupplyChain.DigitalSupplyChainTracker.controller;
 
+import com.SupplyChain.DigitalSupplyChainTracker.dto.request.ChangeRoleRequest;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.UserRegisterRequest;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.UserEntity;
 import com.SupplyChain.DigitalSupplyChainTracker.service.Impl.UserServiceImpl;
@@ -11,10 +12,10 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@EnableMethodSecurity
 public class UserController {
 
     private final UserServiceImpl userService;
@@ -41,9 +42,9 @@ public class UserController {
 
     //Change Role
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/admin/users/{id}/role")
-    public ResponseEntity<?> changeRole(String role, @PathVariable Long id) {
-        UserEntity changedRoleUser = userService.changeRole(role, id);
+    @PutMapping("/admin/users/role")
+    public ResponseEntity<?> changeRole(@RequestBody ChangeRoleRequest newRole) {
+        UserEntity changedRoleUser = userService.changeRole(newRole);
 
         return ResponseEntity.status(HttpStatus.OK).body(changedRoleUser);
     }

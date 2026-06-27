@@ -1,5 +1,6 @@
 package com.SupplyChain.DigitalSupplyChainTracker.service.Impl;
 
+import com.SupplyChain.DigitalSupplyChainTracker.dto.request.ChangeRoleRequest;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.LoginRequest;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.UserRegisterRequest;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.response.LoginResponse;
@@ -65,12 +66,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserEntity changeRole(String role, Long id) {
+    public UserEntity changeRole(ChangeRoleRequest newRoleRequest) {
 
-        UserEntity user = userRepo.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
+        String email = newRoleRequest.getEmail();
 
-        user.setRole(Role.valueOf(role.toUpperCase()));
+        UserEntity user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
+
+        user.setRole(Role.valueOf(newRoleRequest.getRole().toString().toUpperCase()));
 
         return userRepo.save(user);
     }
