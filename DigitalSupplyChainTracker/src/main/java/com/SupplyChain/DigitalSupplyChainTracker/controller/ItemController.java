@@ -1,7 +1,9 @@
 package com.SupplyChain.DigitalSupplyChainTracker.controller;
 
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.AddItemRequest;
+import com.SupplyChain.DigitalSupplyChainTracker.dto.request.ItemUpdateRequest;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.response.AddItem;
+import com.SupplyChain.DigitalSupplyChainTracker.dto.response.ItemUpdateResponse;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.Item;
 import com.SupplyChain.DigitalSupplyChainTracker.service.ItemService;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/items")
@@ -33,8 +36,8 @@ public class ItemController {
 
     // Get item by ID
     @GetMapping("/{id}")
-    public ResponseEntity<?> getItemById(Long id) {
-       Item item = itemService.getItemById(id);
+    public ResponseEntity<?> getItemById(UUID id) {
+       Item item = itemService.getItemByItemId(id);
        return ResponseEntity.status(HttpStatus.OK).body(item);
     }
 
@@ -47,24 +50,21 @@ public class ItemController {
        return ResponseEntity.status(HttpStatus.CREATED).body(savedItem);
     }
 
-    // update an existing item through id
-    @PutMapping("/item")
-    public ResponseEntity<?> updateItem(@RequestBody Item item) {
+    // update an existing item through ItemId
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateItem(@RequestBody ItemUpdateRequest updateItemReq, @PathVariable UUID itemId) {
 
-        Item existingItem = itemService.getItemById(item.getId());
-
-        existingItem.setName(item.getName());
-        existingItem.setCategory(item.getCategory());
-        existingItem.setSupplier(item.getSupplier());
+        Item updatedItem = itemService.updateItem(updateItemReq, itemId);
 
         return ResponseEntity.status(HttpStatus.OK).body(
-                new AddItem(existingItem.getName(), "item updated successfully")
+                new ItemUpdateResponse("item", updatedItem)
         );
     }
 
     @DeleteMapping
-    public ResponseEntity<?> deleteItem(@RequestParam Long itemId) {
-        itemService.deleteItem(itemId);
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deleteItem(@RequestParam UUID itemId) {
+        itemService.deleteItemByItemId(itemId);
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
                 .body("item deleted successfully");

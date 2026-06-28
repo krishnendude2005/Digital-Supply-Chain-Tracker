@@ -4,12 +4,17 @@ import com.SupplyChain.DigitalSupplyChainTracker.entity.enums.ShipmentStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
 @Setter
+@EntityListeners(AuditingEntityListener.class)
 public class Shipment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,7 +29,12 @@ public class Shipment {
 
     private String fromLocation;
     private String toLocation;
-    private LocalDate shipmentStartDate;
-    private LocalDate shipmentExpectedDate;
+    private LocalDateTime shipmentStartDate;
+    private LocalDateTime shipmentExpectedDate;
     private ShipmentStatus currentStatus;
+
+    @CreatedDate
+    private LocalDateTime createdAt;
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
 }

@@ -3,7 +3,11 @@ package com.SupplyChain.DigitalSupplyChainTracker.entity;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -12,6 +16,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@EntityListeners(AuditingEntityListener.class)
 public class UserEntity {
 
     @Id
@@ -26,4 +31,9 @@ public class UserEntity {
 
     @Enumerated(EnumType.STRING)
     private Role role; //todo: In-Future, an user can have multiple roles.
+
+    @CreatedDate
+    private LocalDateTime createdAt;
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
 }

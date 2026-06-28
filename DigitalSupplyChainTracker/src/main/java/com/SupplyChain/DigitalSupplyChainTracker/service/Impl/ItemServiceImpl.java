@@ -1,6 +1,7 @@
 package com.SupplyChain.DigitalSupplyChainTracker.service.Impl;
 
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.AddItemRequest;
+import com.SupplyChain.DigitalSupplyChainTracker.dto.request.ItemUpdateRequest;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.Item;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.UserEntity;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.enums.Role;
@@ -14,6 +15,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -83,9 +86,8 @@ public class ItemServiceImpl implements ItemService {
 
         Item itemToSave = Item.builder()
                 .name(item.getName())
-                .itemId(UUID.randomUUID().toString())
+                .itemId(UUID.randomUUID())
                 .category(item.getCategory())
-                .createdDate(LocalDateTime.now())
                 .supplier(currentLoggedInUser)
                 .build();
 
@@ -94,29 +96,60 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Item updateItem(Item item) {
-        return itemRepo.save(item);
+    public Item updateItem(ItemUpdateRequest updateRequest, UUID itemId) {
+        Item itemToUpdate = itemRepo.findByItemId(itemId.toString())
+                .orElseThrow(() -> new ResourceNotFoundException("Item not found with id: " + itemId));
+
+        UserEntity updatedSupplier = userRepo.findByEmail(updateRequest.getSupplierEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("Supplier not found with email: " + updateRequest.getSupplierEmail()));
+
+        itemToUpdate.setName(updateRequest.getName());
+        itemToUpdate.setCategory(updateRequest.getCategory());
+        itemToUpdate.setSupplier(updatedSupplier);
+
+        return itemRepo.save(itemToUpdate);
+
     }
 
     @Override
-    public void deleteItem(Long id) {
+    public void deleteItemByItemId(UUID itemId) {
 
-        if (!itemRepo.existsById(id)) {
-            throw new ResourceNotFoundException("Item not found with id: " + id);
+        if (!itemRepo.existsByItemId(itemId.toString())) {
+            throw new ResourceNotFoundException("Item not found with id: " + itemId);
         }
 
-        itemRepo.deleteById(id);
+        itemRepo.deleteByItemId(itemId.toString());
     }
 
     @Override
-    public Item getItemById(Long id) {
-        return itemRepo.findById(id).orElseThrow(() ->
-                new ResourceNotFoundException("Item not found with id: " + id)
+    public Item getItemByItemId(UUID itemId) {
+
+        return itemRepo.findByItemId(itemId.toString()).orElseThrow(() ->
+                new ResourceNotFoundException("Item not found with id: " + itemId)
         );
     }
 
     @Override
     public List<Item> searchedItem(String category) {
-        return itemRepo.findByCategory(category);
+        String currentLoggedInUserEmail =
+                SecurityContextHolder.getContext().getAuthentication().getName();
+
+        UserEntity currentLoggedInUser = userRepo.findByEmail(currentLoggedInUserEmail)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User not found with email: " + currentLoggedInUserEmail));
+
+        switch (currentLoggedInUser.getRole()) {
+            case ADMIN:
+                return itemRepo.findByCategoryIgnoreCase(category);
+
+            case SUPPLIER:
+                return itemRepo.findBySupplierAndCategoryIgnoreCase(
+                        currentLoggedInUserEmail, category);
+
+            default:
+                return Collections.emptyList();
+        }
     }
+
+
 }

@@ -17,6 +17,7 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/users")
 public class UserController {
 
     private final UserService userService;
@@ -35,7 +36,7 @@ public class UserController {
 
     // Admin can check all users
     @PreAuthorize("hasRole('ADMIN')")
-    @GetMapping("/users")
+    @GetMapping()
     public ResponseEntity<?> getAllUsers() {
         List<UserEntity> allUsers = userService.getAllUsers();
         return ResponseEntity.status(HttpStatus.OK).body(allUsers);
@@ -43,7 +44,7 @@ public class UserController {
 
     //Change Role
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/admin/users/role")
+    @PutMapping("/admin/role")
     public ResponseEntity<?> changeRole(@RequestBody ChangeRoleRequest newRole) {
         UserEntity changedRoleUser = userService.changeRole(newRole);
 
