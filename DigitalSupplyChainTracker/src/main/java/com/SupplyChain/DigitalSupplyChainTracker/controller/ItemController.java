@@ -62,7 +62,7 @@ public class ItemController {
     }
 
     @DeleteMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN', 'SUPPLIER')")
     public ResponseEntity<?> deleteItem(@RequestParam UUID itemId) {
         itemService.deleteItemByItemId(itemId);
         return ResponseEntity
@@ -75,6 +75,13 @@ public class ItemController {
     public ResponseEntity<?> searchedItem(@RequestParam(name = "category") String category) {
         List<Item> items = itemService.searchedItem(category);
         return ResponseEntity.status(HttpStatus.OK).body(items);
+    }
+
+    //Get a particular item metrics
+    @GetMapping("/{itemId}")
+    public ResponseEntity<?> getItemMetrics(@PathVariable UUID itemId) {
+        Item item = itemService.getItemByItemId(itemId);
+        return ResponseEntity.status(HttpStatus.OK).body(item);
     }
 
 }

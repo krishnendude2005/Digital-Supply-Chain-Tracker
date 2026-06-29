@@ -10,6 +10,7 @@ import com.SupplyChain.DigitalSupplyChainTracker.repository.ItemRepo;
 import com.SupplyChain.DigitalSupplyChainTracker.repository.UserRepo;
 import com.SupplyChain.DigitalSupplyChainTracker.service.ItemService;
 import lombok.RequiredArgsConstructor;
+import org.apache.catalina.User;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -97,7 +98,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Item updateItem(ItemUpdateRequest updateRequest, UUID itemId) {
-        Item itemToUpdate = itemRepo.findByItemId(itemId.toString())
+        Item itemToUpdate = itemRepo.findByItemId(itemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Item not found with id: " + itemId));
 
         UserEntity updatedSupplier = userRepo.findByEmail(updateRequest.getSupplierEmail())
@@ -114,17 +115,22 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public void deleteItemByItemId(UUID itemId) {
 
-        if (!itemRepo.existsByItemId(itemId.toString())) {
+        if (!itemRepo.existsByItemId(itemId)) {
             throw new ResourceNotFoundException("Item not found with id: " + itemId);
         }
 
-        itemRepo.deleteByItemId(itemId.toString());
+        //todo: Performs a soft delete on the item,
+        // but only after validating that it is not currently linked to any active shipments(CREATED, IN_TRANSIT)
+        itemRepo.deleteByItemId(itemId);
     }
 
     @Override
     public Item getItemByItemId(UUID itemId) {
 
-        return itemRepo.findByItemId(itemId.toString()).orElseThrow(() ->
+        //Give result according to the role of the user
+        String currentLoggedInUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        return itemRepo.findByItemIdAndSupplierIgnoreCase(itemId, currentLoggedInUserEmail).orElseThrow(() ->
                 new ResourceNotFoundException("Item not found with id: " + itemId)
         );
     }
