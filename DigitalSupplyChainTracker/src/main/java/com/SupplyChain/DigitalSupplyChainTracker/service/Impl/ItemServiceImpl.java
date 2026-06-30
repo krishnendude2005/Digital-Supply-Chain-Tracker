@@ -64,7 +64,7 @@ public class ItemServiceImpl implements ItemService {
 
             case "ROLE_SUPPLIER":
                 String supplierEmail = authentication.getName();
-                return itemRepo.findBySupplier(supplierEmail);
+                return itemRepo.findBySupplier_EmailIgnoreCase(supplierEmail);
 
 
             default:
@@ -127,12 +127,19 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public Item getItemByItemId(UUID itemId) {
 
+        //Admin can view all items
+
         //Give result according to the role of the user
         String currentLoggedInUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        return itemRepo.findByItemIdAndSupplierIgnoreCase(itemId, currentLoggedInUserEmail).orElseThrow(() ->
-                new ResourceNotFoundException("Item not found with id: " + itemId)
-        );
+        if(userRepo.findByEmail(currentLoggedInUserEmail).get().getRole() == Role.ADMIN) {
+            return itemRepo.findByItemId(itemId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Item not found with id: " + itemId));
+        } else {
+
+            return itemRepo.findBySupplier_EmailIgnoreCaseAndItemId(currentLoggedInUserEmail, itemId).orElseThrow(() ->
+                    new ResourceNotFoundException("Item not found with id: " + itemId));
+        }
     }
 
     @Override
@@ -149,7 +156,7 @@ public class ItemServiceImpl implements ItemService {
                 return itemRepo.findByCategoryIgnoreCase(category);
 
             case SUPPLIER:
-                return itemRepo.findBySupplierAndCategoryIgnoreCase(
+                return itemRepo.findByCategoryIgnoreCaseAndSupplier_EmailIgnoreCase(
                         currentLoggedInUserEmail, category);
 
             default:

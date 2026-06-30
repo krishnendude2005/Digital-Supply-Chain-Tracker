@@ -34,12 +34,6 @@ public class ItemController {
         return ResponseEntity.status(HttpStatus.OK).body(items);
     }
 
-    // Get item by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getItemById(UUID id) {
-       Item item = itemService.getItemByItemId(id);
-       return ResponseEntity.status(HttpStatus.OK).body(item);
-    }
 
     // Create an item (Only for SUPPLIER and ADMIN) todo: Need to decide if ADMIN can create item
     @PostMapping

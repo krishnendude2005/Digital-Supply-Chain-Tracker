@@ -10,7 +10,7 @@ import java.util.UUID;
 public interface ItemRepo extends JpaRepository<Item, Long> {
     List<Item> findByCategory(String category);
 
-    List<Item> findBySupplier(String supplier);
+    List<Item> findBySupplier_EmailIgnoreCase(String supplierEmail);
 
     Optional<Item> findByItemId(UUID uuid);
 
@@ -21,8 +21,8 @@ public interface ItemRepo extends JpaRepository<Item, Long> {
     //
     List<Item> findByCategoryIgnoreCase(String category);
 
-    List<Item> findBySupplierAndCategoryIgnoreCase(String supplier, String category);
+    List<Item> findByCategoryIgnoreCaseAndSupplier_EmailIgnoreCase(String supplier, String category);
     //
-    Optional<Item> findByItemIdAndSupplierIgnoreCase(UUID uuid, String supplier);
+    Optional<Item> findBySupplier_EmailIgnoreCaseAndItemId(String supplier, UUID uuid);
 }
 
