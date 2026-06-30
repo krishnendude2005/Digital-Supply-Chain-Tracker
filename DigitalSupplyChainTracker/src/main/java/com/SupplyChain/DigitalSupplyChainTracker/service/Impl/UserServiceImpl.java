@@ -31,7 +31,7 @@ public class UserServiceImpl implements UserService {
 
         //RegisterRequest -> UserEntity
         UserEntity newUser = convertToUserEntity(registerRequest);
-        newUser.setUserId(UUID.randomUUID().toString());
+        newUser.setUserId(UUID.randomUUID());
 
         //save user
         newUser = userRepo.save(newUser);

@@ -25,7 +25,7 @@ public class DatabaseSeeder implements CommandLineRunner {
             UserEntity systemAdmin = UserEntity
                     .builder()
                     .name("System Admin")
-                    .userId(UUID.randomUUID().toString())
+                    .userId(UUID.randomUUID())
                     .email("admin@gmail.com")
                     .password(passwordEncoder.encode("123"))
                     .role(Role.ADMIN)

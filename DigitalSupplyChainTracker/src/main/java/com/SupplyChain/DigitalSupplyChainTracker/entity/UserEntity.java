@@ -23,7 +23,7 @@ public class UserEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String userId; // Java(accessible) Side ID
+    private UUID userId; // Java(accessible) Side ID
 
     private String name;
     private String email;

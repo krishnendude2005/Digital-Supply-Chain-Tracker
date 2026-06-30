@@ -2,24 +2,27 @@ package com.SupplyChain.DigitalSupplyChainTracker.entity;
 
 import com.SupplyChain.DigitalSupplyChainTracker.entity.enums.ShipmentStatus;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Getter
 @Setter
 @EntityListeners(AuditingEntityListener.class)
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Shipment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String shipmentId; // Java(accessible) Side ID
+    private UUID shipmentId; // Java(accessible) Side ID
 
 
     @ManyToOne
