@@ -91,17 +91,18 @@ public class ShipmentServiceImpl implements ShipmentService {
 
     @Override
     public List<Shipment> getAllShipments() {
-        Role currentLoggedInUserRole = Role.valueOf(SecurityContextHolder.getContext().getAuthentication().getAuthorities().toString().toUpperCase());
-        String currentLoggedInUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        switch (currentLoggedInUserRole) {
-            case Role.ADMIN:
+        String currentLoggedInUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserEntity current = userRepo.findByEmail(currentLoggedInUserEmail).orElseThrow(()-> new ResourceNotFoundException("User not found with email: " + currentLoggedInUserEmail));
+
+        switch (current.getRole()) {
+            case ADMIN:
                 return shipmentRepo.findAll();
 
-            case Role.SUPPLIER:
+            case SUPPLIER:
                 return shipmentRepo.findByItem_Supplier_EmailIgnoreCase(currentLoggedInUserEmail);
 
-            case Role.TRANSPORTER:
+            case TRANSPORTER:
                 return shipmentRepo.findByAssignedTransporter_EmailIgnoreCase(currentLoggedInUserEmail);
 
             default:
@@ -110,14 +111,14 @@ public class ShipmentServiceImpl implements ShipmentService {
     }
 
     @Override
-    @PreAuthorize("hasRole('ADMIN', 'TRANSPORTER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TRANSPORTER')")
     public Boolean changeShipmentStatus(UUID shipmentId, ShipmentStatus status) {
-
         //Find Shipment
         Shipment shipmentToChangeStatus = shipmentRepo.findByShipmentId(shipmentId).orElseThrow(()-> new ResourceNotFoundException("No shipment found with shipmentId: " + shipmentId));
 
-        //Change the status
+        //Change the status & Save the change
         shipmentToChangeStatus.setCurrentStatus(status);
+        shipmentRepo.save(shipmentToChangeStatus);
 
         return true;
     }
