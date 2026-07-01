@@ -109,5 +109,18 @@ public class ShipmentServiceImpl implements ShipmentService {
         }
     }
 
+    @Override
+    @PreAuthorize("hasRole('ADMIN', 'TRANSPORTER')")
+    public Boolean changeShipmentStatus(UUID shipmentId, ShipmentStatus status) {
+
+        //Find Shipment
+        Shipment shipmentToChangeStatus = shipmentRepo.findByShipmentId(shipmentId).orElseThrow(()-> new ResourceNotFoundException("No shipment found with shipmentId: " + shipmentId));
+
+        //Change the status
+        shipmentToChangeStatus.setCurrentStatus(status);
+
+        return true;
+    }
+
 
 }

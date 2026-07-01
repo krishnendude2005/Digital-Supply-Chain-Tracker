@@ -12,6 +12,5 @@ public class ShipmentRequest {
     private UUID itemId;
     private String fromLocation;
     private String toLocation;
-    private LocalDateTime startDate;
     private LocalDateTime endDate;
 }
