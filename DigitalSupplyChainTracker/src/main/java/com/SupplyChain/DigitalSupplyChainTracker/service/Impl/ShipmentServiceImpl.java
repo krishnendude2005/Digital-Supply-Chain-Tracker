@@ -5,6 +5,7 @@ import com.SupplyChain.DigitalSupplyChainTracker.dto.request.TransporterToAssign
 import com.SupplyChain.DigitalSupplyChainTracker.entity.Item;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.Shipment;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.UserEntity;
+import com.SupplyChain.DigitalSupplyChainTracker.entity.enums.Role;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.enums.ShipmentStatus;
 import com.SupplyChain.DigitalSupplyChainTracker.exception.ResourceNotFoundException;
 import com.SupplyChain.DigitalSupplyChainTracker.exception.UserNotMatch;
@@ -61,6 +62,7 @@ public class ShipmentServiceImpl implements ShipmentService {
                 .fromLocation(shipmentRequest.getFromLocation())
                 .toLocation(shipmentRequest.getToLocation())
                 .currentStatus(ShipmentStatus.CREATED)
+                .shipmentExpectedDate(shipmentRequest.getEndDate())
                 .build();
 
         //Save the shipment in DB
@@ -82,14 +84,29 @@ public class ShipmentServiceImpl implements ShipmentService {
 
         //Assign transporter
         existingShipmentToAssignTransporter.setAssignedTransporter(transporterToAssign);
+        existingShipmentToAssignTransporter.setShipmentStartDate(LocalDateTime.now()); //
 
         return shipmentRepo.save(existingShipmentToAssignTransporter);
     }
 
-    //todo: need role based filtering
     @Override
     public List<Shipment> getAllShipments() {
-        return shipmentRepo.findAll();
+        Role currentLoggedInUserRole = Role.valueOf(SecurityContextHolder.getContext().getAuthentication().getAuthorities().toString().toUpperCase());
+        String currentLoggedInUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        switch (currentLoggedInUserRole) {
+            case Role.ADMIN:
+                return shipmentRepo.findAll();
+
+            case Role.SUPPLIER:
+                return shipmentRepo.findByItem_Supplier_EmailIgnoreCase(currentLoggedInUserEmail);
+
+            case Role.TRANSPORTER:
+                return shipmentRepo.findByAssignedTransporter_EmailIgnoreCase(currentLoggedInUserEmail);
+
+            default:
+                return List.of();
+        }
     }
 
 
