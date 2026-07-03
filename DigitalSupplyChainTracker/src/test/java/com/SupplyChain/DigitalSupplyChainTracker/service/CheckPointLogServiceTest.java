@@ -17,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,9 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CheckPointLogServiceTest {
@@ -122,5 +121,51 @@ class CheckPointLogServiceTest {
 
         verify(shipmentRepo).findByShipmentId(shipmentId);
         verify(checkpointLogRepo).save(any(CheckpointLog.class));
+    }
+    @Test
+    void getShipmentLog_shouldReturnCheckpointLogs() {
+        UUID shipmentId = UUID.randomUUID();
+
+        Shipment shipment = Shipment.builder()
+                .id(1L)
+                .shipmentId(shipmentId)
+                .fromLocation("Kolkata")
+                .toLocation("Delhi")
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        CheckpointLog log1 = CheckpointLog.builder()
+                .id(1L)
+                .checkpointId(UUID.randomUUID())
+                .location("Kolkata Hub")
+                .itemStatus(ItemStatus.IN_TRANSIT)
+                .shipment(shipment)
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        CheckpointLog log2 = CheckpointLog.builder()
+                .id(2L)
+                .checkpointId(UUID.randomUUID())
+                .location("Delhi Hub")
+                .itemStatus(ItemStatus.DELIVERED)
+                .shipment(shipment)
+                .timestamp(LocalDateTime.now())
+                .build();
+
+        List<CheckpointLog> expectedLogs = List.of(log1, log2);
+
+        when(checkpointLogRepo.findAllByShipment_ShipmentId(shipmentId)).thenReturn(expectedLogs);
+
+        List<CheckpointLog> result = checkpointLogService.getShipmentLog(shipmentId);
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        assertEquals("Kolkata Hub", result.get(0).getLocation());
+        assertEquals(ItemStatus.IN_TRANSIT, result.get(0).getItemStatus());
+        assertEquals("Delhi Hub", result.get(1).getLocation());
+        assertEquals(ItemStatus.DELIVERED, result.get(1).getItemStatus());
+
+        verify(checkpointLogRepo, times(1)).findAllByShipment_ShipmentId(shipmentId);
     }
 }

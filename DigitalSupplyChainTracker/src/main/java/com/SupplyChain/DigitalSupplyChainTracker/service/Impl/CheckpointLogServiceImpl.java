@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -36,7 +37,7 @@ public class CheckpointLogServiceImpl implements CheckPointLogService {
                 .checkpointId(UUID.randomUUID())
                 .location(location)
                 .itemStatus(itemStatus)
-                .shipment(shipment) //todo: create dto instead of sending direct shipment Entity
+                .shipment(shipment) //todo: create dto instead of sending direct shipment Entity. (FOR ANY RETURN VALUES -> WRITE DTO -> RETURN DTO , instead of direct ENTITY)
                 .timestamp(LocalDateTime.now())
                 .build();
 
@@ -50,5 +51,10 @@ public class CheckpointLogServiceImpl implements CheckPointLogService {
                 .location(newCheckPointLog.getLocation())
                 .message("Checkpoint Log Created Successfully")
                 .build();
+    }
+
+    @Override
+    public List<CheckpointLog> getShipmentLog(UUID shipmentId) {
+      return checkpointLogRepo.findAllByShipment_ShipmentId(shipmentId);
     }
 }
