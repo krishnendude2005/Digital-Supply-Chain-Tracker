@@ -157,7 +157,7 @@ public class ItemServiceImpl implements ItemService {
 
             case SUPPLIER:
                 return itemRepo.findByCategoryIgnoreCaseAndSupplier_EmailIgnoreCase(
-                        currentLoggedInUserEmail, category);
+                        category, currentLoggedInUserEmail);
 
             default:
                 return Collections.emptyList();

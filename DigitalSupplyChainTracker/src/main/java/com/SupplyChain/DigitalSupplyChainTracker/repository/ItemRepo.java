@@ -21,7 +21,7 @@ public interface ItemRepo extends JpaRepository<Item, Long> {
     //
     List<Item> findByCategoryIgnoreCase(String category);
 
-    List<Item> findByCategoryIgnoreCaseAndSupplier_EmailIgnoreCase(String supplier, String category);
+    List<Item> findByCategoryIgnoreCaseAndSupplier_EmailIgnoreCase(String category, String supplier);
     //
     Optional<Item> findBySupplier_EmailIgnoreCaseAndItemId(String supplier, UUID uuid);
 }

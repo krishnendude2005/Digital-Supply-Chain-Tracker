@@ -8,6 +8,7 @@ import lombok.Setter;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Getter
@@ -17,7 +18,7 @@ public class Alert {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String alertId; // Java(accessible) Side ID
+    private UUID alertId; // Java(accessible) Side ID
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "checkpoint_log_id")
