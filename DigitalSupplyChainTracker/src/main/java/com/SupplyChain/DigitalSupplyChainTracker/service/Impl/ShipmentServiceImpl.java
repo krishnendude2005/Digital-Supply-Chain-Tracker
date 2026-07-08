@@ -111,10 +111,21 @@ public class ShipmentServiceImpl implements ShipmentService {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('ADMIN', 'TRANSPORTER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TRANSPORTER', 'WAREHOUSE_MANAGER')")
     public Boolean changeShipmentStatus(UUID shipmentId, ShipmentStatus status) {
         //Find Shipment
         Shipment shipmentToChangeStatus = shipmentRepo.findByShipmentId(shipmentId).orElseThrow(()-> new ResourceNotFoundException("No shipment found with shipmentId: " + shipmentId));
+
+        String currentLoggedInUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserEntity currentLoggedInUser = userRepo.findByEmail(currentLoggedInUserEmail)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "User not found with email: " + currentLoggedInUserEmail));
+
+
+        //status -> delivered -> only by warehouse manager
+        if(status.equals(ShipmentStatus.DELIVERED) && currentLoggedInUser.getRole() != Role.WAREHOUSE_MANAGER) {
+            throw new UserNotMatch("User is not authorized to change shipment status");
+        }
 
         //Change the status & Save the change
         shipmentToChangeStatus.setCurrentStatus(status);

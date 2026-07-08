@@ -8,6 +8,7 @@ import com.SupplyChain.DigitalSupplyChainTracker.entity.UserEntity;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.enums.Role;
 import com.SupplyChain.DigitalSupplyChainTracker.exception.ResourceNotFoundException;
 import com.SupplyChain.DigitalSupplyChainTracker.repository.ItemRepo;
+import com.SupplyChain.DigitalSupplyChainTracker.repository.ShipmentRepo;
 import com.SupplyChain.DigitalSupplyChainTracker.repository.UserRepo;
 import com.SupplyChain.DigitalSupplyChainTracker.service.Impl.ItemServiceImpl;
 import org.junit.jupiter.api.AfterEach;
@@ -42,6 +43,9 @@ class ItemServiceTest {
 
     @Mock
     private UserRepo userRepo;
+
+    @Mock
+    private ShipmentRepo shipmentRepo;
 
     @InjectMocks
     private ItemServiceImpl itemService;
@@ -232,11 +236,13 @@ class ItemServiceTest {
     @Test
     void deleteItemByItemId_Success() {
         when(itemRepo.existsByItemId(itemId)).thenReturn(true);
+        when(shipmentRepo.existsByItem_ItemId(itemId)).thenReturn(false);
         doNothing().when(itemRepo).deleteByItemId(itemId);
 
         itemService.deleteItemByItemId(itemId);
 
         verify(itemRepo).existsByItemId(itemId);
+        verify(shipmentRepo).existsByItem_ItemId(itemId);
         verify(itemRepo).deleteByItemId(itemId);
     }
 

@@ -6,7 +6,9 @@ import com.SupplyChain.DigitalSupplyChainTracker.entity.Item;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.UserEntity;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.enums.Role;
 import com.SupplyChain.DigitalSupplyChainTracker.exception.ResourceNotFoundException;
+import com.SupplyChain.DigitalSupplyChainTracker.exception.ShipmentAlreadyExistsException;
 import com.SupplyChain.DigitalSupplyChainTracker.repository.ItemRepo;
+import com.SupplyChain.DigitalSupplyChainTracker.repository.ShipmentRepo;
 import com.SupplyChain.DigitalSupplyChainTracker.repository.UserRepo;
 import com.SupplyChain.DigitalSupplyChainTracker.service.ItemService;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ public class ItemServiceImpl implements ItemService {
 
     private final ItemRepo itemRepo;
     private final UserRepo userRepo;
+    private final ShipmentRepo shipmentRepo;
 
     @Override
     public List<Item> getAllItems(Authentication authentication) {
@@ -119,8 +122,11 @@ public class ItemServiceImpl implements ItemService {
             throw new ResourceNotFoundException("Item not found with id: " + itemId);
         }
 
-        //todo: Performs a soft delete on the item,
+        // Performs a soft delete on the item,
         // but only after validating that it is not currently linked to any active shipments(CREATED, IN_TRANSIT)
+        if(shipmentRepo.existsByItem_ItemId(itemId)) {
+            throw new ShipmentAlreadyExistsException("Delete Item Not Possible \n" + "Shipment already exists for this Item with ItemID:" + itemId );
+        }
         itemRepo.deleteByItemId(itemId);
     }
 

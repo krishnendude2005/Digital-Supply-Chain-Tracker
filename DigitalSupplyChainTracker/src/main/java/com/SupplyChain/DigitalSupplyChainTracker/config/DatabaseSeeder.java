@@ -32,8 +32,33 @@ public class DatabaseSeeder implements CommandLineRunner {
                     .build();
 
             userRepo.save(systemAdmin);
-
             System.out.println("✅ Initial Admin Account Created Successfully!");
+        }
+
+        if(userRepo.findByRole(Role.SUPPLIER).isEmpty()) {
+            UserEntity supplier = UserEntity
+                    .builder()
+                    .name("Supplier One")
+                    .userId(UUID.randomUUID())
+                    .email("supplier1@example.com")
+                    .password(passwordEncoder.encode("123"))
+                    .role(Role.SUPPLIER)
+                    .build();
+            userRepo.save(supplier);
+            System.out.println("✅ Initial Supplier Account Created Successfully!");
+        }
+
+        if(userRepo.findByRole(Role.TRANSPORTER).isEmpty()) {
+            UserEntity transporter = UserEntity
+                    .builder()
+                    .name("Transporter One")
+                    .userId(UUID.randomUUID())
+                    .email("transporter1@example.com")
+                    .password(passwordEncoder.encode("123"))
+                    .role(Role.TRANSPORTER)
+                    .build();
+            userRepo.save(transporter);
+            System.out.println("✅ Initial Transporter Account Created Successfully!");
         }
     }
 }

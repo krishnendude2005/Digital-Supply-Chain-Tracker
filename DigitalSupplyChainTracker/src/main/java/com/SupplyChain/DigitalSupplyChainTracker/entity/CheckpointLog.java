@@ -4,6 +4,7 @@ package com.SupplyChain.DigitalSupplyChainTracker.entity;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.enums.ItemStatus;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
@@ -30,6 +31,7 @@ public class CheckpointLog {
     @JoinColumn(name = "shipment_id")
     private Shipment shipment;
 
+    @CreatedDate
     private LocalDateTime timestamp;
 
 }

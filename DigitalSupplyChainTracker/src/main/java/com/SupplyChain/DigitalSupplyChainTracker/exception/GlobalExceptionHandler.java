@@ -32,4 +32,14 @@ public class GlobalExceptionHandler {
     public ResponseEntity<?> handleUserNotMath(UserNotMatch ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
     }
+
+    @ExceptionHandler(CheckpointLogNotFound.class)
+    public ResponseEntity<?> handleCheckpointLogNotFoundException(Exception ex) {
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(ShipmentAlreadyExistsException.class)
+    public ResponseEntity<?> handleShipmentAlreadyExistsException(Exception ex){
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
 }

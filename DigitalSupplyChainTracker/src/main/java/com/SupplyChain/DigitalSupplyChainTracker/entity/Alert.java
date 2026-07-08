@@ -2,8 +2,8 @@ package com.SupplyChain.DigitalSupplyChainTracker.entity;
 
 import com.SupplyChain.DigitalSupplyChainTracker.entity.enums.AlertType;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -13,6 +13,9 @@ import java.util.UUID;
 @Entity
 @Getter
 @Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Alert {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -24,10 +27,12 @@ public class Alert {
     @JoinColumn(name = "checkpoint_log_id")
     private CheckpointLog checkpointLog;
 
+    @CreatedDate
     private LocalDateTime createdAt;
 
     private AlertType type;
-    private LocalDate createdOn;
     private String message;
+
+    private Boolean resolved;
 
 }
