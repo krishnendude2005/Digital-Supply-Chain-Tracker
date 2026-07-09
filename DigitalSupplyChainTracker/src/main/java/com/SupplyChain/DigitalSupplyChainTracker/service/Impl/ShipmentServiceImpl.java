@@ -2,6 +2,9 @@ package com.SupplyChain.DigitalSupplyChainTracker.service.Impl;
 
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.ShipmentRequest;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.TransporterToAssignRequest;
+import com.SupplyChain.DigitalSupplyChainTracker.dto.response.ItemResponse;
+import com.SupplyChain.DigitalSupplyChainTracker.dto.response.ShipmentResponse;
+import com.SupplyChain.DigitalSupplyChainTracker.dto.response.ShipmentStatusChangeResponse;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.Item;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.Shipment;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.UserEntity;
@@ -32,7 +35,7 @@ public class ShipmentServiceImpl implements ShipmentService {
 
     @PreAuthorize("hasRole('SUPPLIER')")
     @Override
-    public Shipment createShipment(ShipmentRequest shipmentRequest) {
+    public ShipmentResponse createShipment(ShipmentRequest shipmentRequest) {
 
 
         //Fetch the Item from DB
@@ -66,14 +69,13 @@ public class ShipmentServiceImpl implements ShipmentService {
                 .build();
 
         //Save the shipment in DB
-        return shipmentRepo.save(newShipment);
-
-
+        Shipment savedShipment = shipmentRepo.save(newShipment);
+        return convertToShipmentResponse(savedShipment);
     }
 
     @Override
     @PreAuthorize("hasRole('ADMIN')")
-    public Shipment assignTransporter(TransporterToAssignRequest transporter, UUID shipmentId) {
+    public ShipmentResponse assignTransporter(TransporterToAssignRequest transporter, UUID shipmentId) {
 
         UUID transporterId = transporter.getTransporterId();
         UserEntity transporterToAssign = userRepo.findByUserId(transporterId)
@@ -86,33 +88,42 @@ public class ShipmentServiceImpl implements ShipmentService {
         existingShipmentToAssignTransporter.setAssignedTransporter(transporterToAssign);
         existingShipmentToAssignTransporter.setShipmentStartDate(LocalDateTime.now()); //
 
-        return shipmentRepo.save(existingShipmentToAssignTransporter);
+        Shipment assignedShipment = shipmentRepo.save(existingShipmentToAssignTransporter);
+        return convertToShipmentResponse(assignedShipment);
     }
 
     @Override
-    public List<Shipment> getAllShipments() {
+    public List<ShipmentResponse> getAllShipments() {
 
         String currentLoggedInUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         UserEntity current = userRepo.findByEmail(currentLoggedInUserEmail).orElseThrow(()-> new ResourceNotFoundException("User not found with email: " + currentLoggedInUserEmail));
 
+        List<Shipment> shipments;
         switch (current.getRole()) {
             case ADMIN:
-                return shipmentRepo.findAll();
+                shipments = shipmentRepo.findAll();
+                break;
 
             case SUPPLIER:
-                return shipmentRepo.findByItem_Supplier_EmailIgnoreCase(currentLoggedInUserEmail);
+                shipments = shipmentRepo.findByItem_Supplier_EmailIgnoreCase(currentLoggedInUserEmail);
+                break;
 
             case TRANSPORTER:
-                return shipmentRepo.findByAssignedTransporter_EmailIgnoreCase(currentLoggedInUserEmail);
+                shipments = shipmentRepo.findByAssignedTransporter_EmailIgnoreCase(currentLoggedInUserEmail);
+                break;
 
             default:
-                return List.of();
+                shipments = List.of();
         }
+
+        return shipments.stream()
+                .map(this::convertToShipmentResponse)
+                .toList();
     }
 
     @Override
     @PreAuthorize("hasAnyRole('ADMIN', 'TRANSPORTER', 'WAREHOUSE_MANAGER')")
-    public Boolean changeShipmentStatus(UUID shipmentId, ShipmentStatus status) {
+    public ShipmentStatusChangeResponse changeShipmentStatus(UUID shipmentId, ShipmentStatus status) {
         //Find Shipment
         Shipment shipmentToChangeStatus = shipmentRepo.findByShipmentId(shipmentId).orElseThrow(()-> new ResourceNotFoundException("No shipment found with shipmentId: " + shipmentId));
 
@@ -131,8 +142,40 @@ public class ShipmentServiceImpl implements ShipmentService {
         shipmentToChangeStatus.setCurrentStatus(status);
         shipmentRepo.save(shipmentToChangeStatus);
 
-        return true;
+        return ShipmentStatusChangeResponse.builder()
+                .message("Shipment status changed successfully")
+                .shipmentId(shipmentId)
+                .currentStatus(status)
+                .build();
     }
 
+    private ShipmentResponse convertToShipmentResponse(Shipment shipment) {
+        ItemResponse itemResponse = null;
+        if (shipment.getItem() != null) {
+            itemResponse = ItemResponse.builder()
+                    .itemId(shipment.getItem().getItemId())
+                    .name(shipment.getItem().getName())
+                    .category(shipment.getItem().getCategory())
+                    .supplierEmail(shipment.getItem().getSupplier() != null ? shipment.getItem().getSupplier().getEmail() : null)
+                    .supplierName(shipment.getItem().getSupplier() != null ? shipment.getItem().getSupplier().getName() : null)
+                    .supplierRole(shipment.getItem().getSupplier() != null ? shipment.getItem().getSupplier().getRole() : null)
+                    .createdAt(shipment.getItem().getCreatedAt())
+                    .updatedAt(shipment.getItem().getUpdatedAt())
+                    .build();
+        }
 
+        return ShipmentResponse.builder()
+                .shipmentId(shipment.getShipmentId())
+                .item(itemResponse)
+                .fromLocation(shipment.getFromLocation())
+                .toLocation(shipment.getToLocation())
+                .shipmentStartDate(shipment.getShipmentStartDate())
+                .shipmentExpectedDate(shipment.getShipmentExpectedDate())
+                .currentStatus(shipment.getCurrentStatus())
+                .transporterEmail(shipment.getAssignedTransporter() != null ? shipment.getAssignedTransporter().getEmail() : null)
+                .transporterName(shipment.getAssignedTransporter() != null ? shipment.getAssignedTransporter().getName() : null)
+                .createdAt(shipment.getCreatedAt())
+                .updatedAt(shipment.getUpdatedAt())
+                .build();
+    }
 }

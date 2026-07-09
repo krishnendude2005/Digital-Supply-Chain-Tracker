@@ -3,6 +3,8 @@ package com.SupplyChain.DigitalSupplyChainTracker.service;
 
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.ShipmentRequest;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.TransporterToAssignRequest;
+import com.SupplyChain.DigitalSupplyChainTracker.dto.response.ShipmentResponse;
+import com.SupplyChain.DigitalSupplyChainTracker.dto.response.ShipmentStatusChangeResponse;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.Item;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.Shipment;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.UserEntity;
@@ -138,7 +140,7 @@ class ShipmentServiceTest {
         when(itemRepo.findByItemId(itemId)).thenReturn(Optional.of(item));
         when(shipmentRepo.save(any(Shipment.class))).thenReturn(shipment);
 
-        Shipment result = shipmentService.createShipment(shipmentRequest);
+        ShipmentResponse result = shipmentService.createShipment(shipmentRequest);
 
         assertNotNull(result);
         assertEquals(shipmentId, result.getShipmentId());
@@ -178,11 +180,11 @@ class ShipmentServiceTest {
         when(shipmentRepo.findByShipmentId(shipmentId)).thenReturn(Optional.of(shipment));
         when(shipmentRepo.save(any(Shipment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Shipment result = shipmentService.assignTransporter(transporterRequest, shipmentId);
+        ShipmentResponse result = shipmentService.assignTransporter(transporterRequest, shipmentId);
 
         assertNotNull(result);
-        assertNotNull(result.getAssignedTransporter());
-        assertEquals(transporterUser, result.getAssignedTransporter());
+        assertNotNull(result.getTransporterEmail());
+        assertEquals(transporterUser.getEmail(), result.getTransporterEmail());
 
         verify(userRepo).findByUserId(transporterId);
         verify(shipmentRepo).findByShipmentId(shipmentId);
@@ -222,7 +224,7 @@ class ShipmentServiceTest {
                 .thenReturn(Optional.of(adminUser));
         when(shipmentRepo.findAll()).thenReturn(List.of(shipment));
 
-        List<Shipment> result = shipmentService.getAllShipments();
+        List<ShipmentResponse> result = shipmentService.getAllShipments();
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -241,7 +243,7 @@ class ShipmentServiceTest {
         when(shipmentRepo.findByItem_Supplier_EmailIgnoreCase("supplier1@example.com"))
                 .thenReturn(List.of(shipment));
 
-        List<Shipment> result = shipmentService.getAllShipments();
+        List<ShipmentResponse> result = shipmentService.getAllShipments();
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -260,7 +262,7 @@ class ShipmentServiceTest {
         when(shipmentRepo.findByAssignedTransporter_EmailIgnoreCase("transporter1@example.com"))
                 .thenReturn(List.of(shipment));
 
-        List<Shipment> result = shipmentService.getAllShipments();
+        List<ShipmentResponse> result = shipmentService.getAllShipments();
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -274,14 +276,17 @@ class ShipmentServiceTest {
     void changeShipmentStatus_Admin_Success() {
         setAuthentication(adminUser, Role.ADMIN);
 
+        when(userRepo.findByEmail("admin@gmail.com")).thenReturn(Optional.of(adminUser));
         when(shipmentRepo.findByShipmentId(shipmentId)).thenReturn(Optional.of(shipment));
         when(shipmentRepo.save(any(Shipment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Boolean result = shipmentService.changeShipmentStatus(shipmentId, ShipmentStatus.IN_TRANSIT);
+        ShipmentStatusChangeResponse result = shipmentService.changeShipmentStatus(shipmentId, ShipmentStatus.IN_TRANSIT);
 
-        assertTrue(result);
-        assertEquals(ShipmentStatus.IN_TRANSIT, shipment.getCurrentStatus());
+        assertNotNull(result);
+        assertEquals(shipmentId, result.getShipmentId());
+        assertEquals(ShipmentStatus.IN_TRANSIT, result.getCurrentStatus());
 
+        verify(userRepo).findByEmail("admin@gmail.com");
         verify(shipmentRepo).findByShipmentId(shipmentId);
         verify(shipmentRepo).save(any(Shipment.class));
     }
@@ -290,14 +295,17 @@ class ShipmentServiceTest {
     void changeShipmentStatus_Transporter_Success() {
         setAuthentication(transporterUser, Role.TRANSPORTER);
 
+        when(userRepo.findByEmail("transporter1@example.com")).thenReturn(Optional.of(transporterUser));
         when(shipmentRepo.findByShipmentId(shipmentId)).thenReturn(Optional.of(shipment));
         when(shipmentRepo.save(any(Shipment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Boolean result = shipmentService.changeShipmentStatus(shipmentId, ShipmentStatus.IN_TRANSIT);
+        ShipmentStatusChangeResponse result = shipmentService.changeShipmentStatus(shipmentId, ShipmentStatus.IN_TRANSIT);
 
-        assertTrue(result);
-        assertEquals(ShipmentStatus.IN_TRANSIT, shipment.getCurrentStatus());
+        assertNotNull(result);
+        assertEquals(shipmentId, result.getShipmentId());
+        assertEquals(ShipmentStatus.IN_TRANSIT, result.getCurrentStatus());
 
+        verify(userRepo).findByEmail("transporter1@example.com");
         verify(shipmentRepo).findByShipmentId(shipmentId);
         verify(shipmentRepo).save(any(Shipment.class));
     }

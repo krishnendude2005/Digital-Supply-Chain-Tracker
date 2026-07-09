@@ -3,9 +3,8 @@ package com.SupplyChain.DigitalSupplyChainTracker.controller;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.ShipmentRequest;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.ShipmentStatusChangeRequest;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.TransporterToAssignRequest;
-import com.SupplyChain.DigitalSupplyChainTracker.entity.Shipment;
-import com.SupplyChain.DigitalSupplyChainTracker.entity.UserEntity;
-import com.SupplyChain.DigitalSupplyChainTracker.entity.enums.Role;
+import com.SupplyChain.DigitalSupplyChainTracker.dto.response.ShipmentResponse;
+import com.SupplyChain.DigitalSupplyChainTracker.dto.response.ShipmentStatusChangeResponse;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.enums.ShipmentStatus;
 import com.SupplyChain.DigitalSupplyChainTracker.service.ShipmentService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,7 +21,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -30,7 +28,6 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -58,19 +55,14 @@ class ShipmentControllerTest {
         shipmentRequest.setToLocation("Warehouse B");
         shipmentRequest.setEndDate(LocalDateTime.now().plusDays(3));
 
-        Shipment shipment = Shipment.builder()
-                .id(1L)
+        ShipmentResponse shipmentResponse = ShipmentResponse.builder()
                 .shipmentId(UUID.randomUUID())
-                .item(null)
                 .fromLocation("Warehouse A")
                 .toLocation("Warehouse B")
-                .shipmentStartDate(null)
-                .shipmentExpectedDate(LocalDateTime.now().plusDays(3))
                 .currentStatus(ShipmentStatus.CREATED)
-                .assignedTransporter(null)
                 .build();
 
-        when(shipmentService.createShipment(any(ShipmentRequest.class))).thenReturn(shipment);
+        when(shipmentService.createShipment(any(ShipmentRequest.class))).thenReturn(shipmentResponse);
 
         mockMvc.perform(post("/shipments")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -89,35 +81,29 @@ class ShipmentControllerTest {
         TransporterToAssignRequest request = new TransporterToAssignRequest();
         request.setTransporterId(transporterId);
 
-        UserEntity transporter = buildUser("transporter1@example.com", Role.TRANSPORTER, transporterId);
-
-        Shipment shipment = Shipment.builder()
-                .id(1L)
+        ShipmentResponse shipmentResponse = ShipmentResponse.builder()
                 .shipmentId(shipmentId)
-                .item(null)
                 .fromLocation("Warehouse A")
                 .toLocation("Warehouse B")
-                .shipmentStartDate(LocalDateTime.now())
-                .shipmentExpectedDate(LocalDateTime.now().plusDays(3))
                 .currentStatus(ShipmentStatus.IN_TRANSIT)
-                .assignedTransporter(transporter)
+                .transporterEmail("transporter1@example.com")
                 .build();
 
         when(shipmentService.assignTransporter(any(TransporterToAssignRequest.class), eq(shipmentId)))
-                .thenReturn(shipment);
+                .thenReturn(shipmentResponse);
 
         mockMvc.perform(post("/shipments/{shipmentId}/assign", shipmentId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.shipmentId").value(shipmentId.toString()))
-                .andExpect(jsonPath("$.assignedTransporter.email").value("transporter1@example.com"));
+                .andExpect(jsonPath("$.transporterEmail").value("transporter1@example.com"));
     }
 
     @Test
     void getAllShipments_Admin_Success() throws Exception {
-        Shipment shipment1 = buildShipment("Warehouse A", "Warehouse B", ShipmentStatus.CREATED, null);
-        Shipment shipment2 = buildShipment("Warehouse C", "Warehouse D", ShipmentStatus.IN_TRANSIT, null);
+        ShipmentResponse shipment1 = buildShipmentResponse("Warehouse A", "Warehouse B", ShipmentStatus.CREATED);
+        ShipmentResponse shipment2 = buildShipmentResponse("Warehouse C", "Warehouse D", ShipmentStatus.IN_TRANSIT);
 
         when(shipmentService.getAllShipments()).thenReturn(List.of(shipment1, shipment2));
 
@@ -128,8 +114,8 @@ class ShipmentControllerTest {
 
     @Test
     void getAllShipments_Supplier_Success() throws Exception {
-        Shipment shipment1 = buildShipment("Warehouse A", "Warehouse B", ShipmentStatus.CREATED, null);
-        Shipment shipment2 = buildShipment("Warehouse C", "Warehouse D", ShipmentStatus.IN_TRANSIT, null);
+        ShipmentResponse shipment1 = buildShipmentResponse("Warehouse A", "Warehouse B", ShipmentStatus.CREATED);
+        ShipmentResponse shipment2 = buildShipmentResponse("Warehouse C", "Warehouse D", ShipmentStatus.IN_TRANSIT);
 
         when(shipmentService.getAllShipments()).thenReturn(List.of(shipment1, shipment2));
 
@@ -140,10 +126,8 @@ class ShipmentControllerTest {
 
     @Test
     void getAllShipments_Transporter_Success() throws Exception {
-        UserEntity transporter = buildUser("transporter1@example.com", Role.TRANSPORTER, UUID.randomUUID());
-
-        Shipment shipment1 = buildShipment("Warehouse A", "Warehouse B", ShipmentStatus.CREATED, transporter);
-        Shipment shipment2 = buildShipment("Warehouse C", "Warehouse D", ShipmentStatus.IN_TRANSIT, transporter);
+        ShipmentResponse shipment1 = buildShipmentResponse("Warehouse A", "Warehouse B", ShipmentStatus.CREATED);
+        ShipmentResponse shipment2 = buildShipmentResponse("Warehouse C", "Warehouse D", ShipmentStatus.IN_TRANSIT);
 
         when(shipmentService.getAllShipments()).thenReturn(List.of(shipment1, shipment2));
 
@@ -159,16 +143,22 @@ class ShipmentControllerTest {
         ShipmentStatusChangeRequest request = new ShipmentStatusChangeRequest();
         request.setStatus(ShipmentStatus.IN_TRANSIT);
 
+        ShipmentStatusChangeResponse response = ShipmentStatusChangeResponse.builder()
+                .message("Shipment status changed successfully")
+                .shipmentId(shipmentId)
+                .currentStatus(ShipmentStatus.IN_TRANSIT)
+                .build();
+
         when(shipmentService.changeShipmentStatus(eq(shipmentId), eq(ShipmentStatus.IN_TRANSIT)))
-                .thenReturn(true);
+                .thenReturn(response);
 
         mockMvc.perform(put("/shipments/{shipmentId}/status", shipmentId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Shipment status changed successfully")))
-                .andExpect(content().string(containsString(shipmentId.toString())))
-                .andExpect(content().string(containsString("IN_TRANSIT")));
+                .andExpect(jsonPath("$.message").value("Shipment status changed successfully"))
+                .andExpect(jsonPath("$.shipmentId").value(shipmentId.toString()))
+                .andExpect(jsonPath("$.currentStatus").value("IN_TRANSIT"));
     }
 
     @Test
@@ -178,41 +168,32 @@ class ShipmentControllerTest {
         ShipmentStatusChangeRequest request = new ShipmentStatusChangeRequest();
         request.setStatus(ShipmentStatus.IN_TRANSIT);
 
+        ShipmentStatusChangeResponse response = ShipmentStatusChangeResponse.builder()
+                .message("Shipment status changed successfully")
+                .shipmentId(shipmentId)
+                .currentStatus(ShipmentStatus.IN_TRANSIT)
+                .build();
+
         when(shipmentService.changeShipmentStatus(eq(shipmentId), eq(ShipmentStatus.IN_TRANSIT)))
-                .thenReturn(true);
+                .thenReturn(response);
 
         mockMvc.perform(put("/shipments/{shipmentId}/status", shipmentId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Shipment status changed successfully")))
-                .andExpect(content().string(containsString(shipmentId.toString())))
-                .andExpect(content().string(containsString("IN_TRANSIT")));
+                .andExpect(jsonPath("$.message").value("Shipment status changed successfully"))
+                .andExpect(jsonPath("$.shipmentId").value(shipmentId.toString()))
+                .andExpect(jsonPath("$.currentStatus").value("IN_TRANSIT"));
     }
 
-    private UserEntity buildUser(String email, Role role, UUID userId) {
-        return UserEntity.builder()
-                .id(1L)
-                .userId(userId)
-                .name(role.name() + " User")
-                .email(email)
-                .password("encodedPassword")
-                .role(role)
-                .build();
-    }
-
-    private Shipment buildShipment(String from, String to, ShipmentStatus status, UserEntity transporter) {
-        return Shipment.builder()
-                .id(1L)
+    private ShipmentResponse buildShipmentResponse(String from, String to, ShipmentStatus status) {
+        return ShipmentResponse.builder()
                 .shipmentId(UUID.randomUUID())
-                .item(null)
                 .fromLocation(from)
                 .toLocation(to)
                 .shipmentStartDate(LocalDateTime.now())
                 .shipmentExpectedDate(LocalDateTime.now().plusDays(3))
                 .currentStatus(status)
-                .assignedTransporter(transporter)
                 .build();
     }
 }
-

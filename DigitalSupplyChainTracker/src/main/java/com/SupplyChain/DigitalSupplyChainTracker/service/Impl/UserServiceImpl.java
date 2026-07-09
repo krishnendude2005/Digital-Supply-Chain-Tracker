@@ -1,10 +1,9 @@
 package com.SupplyChain.DigitalSupplyChainTracker.service.Impl;
 
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.ChangeRoleRequest;
-import com.SupplyChain.DigitalSupplyChainTracker.dto.request.LoginRequest;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.UserRegisterRequest;
-import com.SupplyChain.DigitalSupplyChainTracker.dto.response.LoginResponse;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.response.UserRegisterResponse;
+import com.SupplyChain.DigitalSupplyChainTracker.dto.response.UserResponse;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.UserEntity;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.enums.Role;
 import com.SupplyChain.DigitalSupplyChainTracker.exception.UserNotFoundException;
@@ -61,12 +60,14 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserEntity> getAllUsers() {
-        return userRepo.findAll();
+    public List<UserResponse> getAllUsers() {
+        return userRepo.findAll().stream()
+                .map(this::convertToUserResponse)
+                .toList();
     }
 
     @Override
-    public UserEntity changeRole(ChangeRoleRequest newRoleRequest) {
+    public UserResponse changeRole(ChangeRoleRequest newRoleRequest) {
 
         String email = newRoleRequest.getEmail();
 
@@ -75,6 +76,18 @@ public class UserServiceImpl implements UserService {
 
         user.setRole(Role.valueOf(newRoleRequest.getRole().toString().toUpperCase()));
 
-        return userRepo.save(user);
+        UserEntity updatedUser = userRepo.save(user);
+        return convertToUserResponse(updatedUser);
+    }
+
+    private UserResponse convertToUserResponse(UserEntity userEntity) {
+        return UserResponse.builder()
+                .userId(userEntity.getUserId())
+                .name(userEntity.getName())
+                .email(userEntity.getEmail())
+                .role(userEntity.getRole())
+                .createdAt(userEntity.getCreatedAt())
+                .updatedAt(userEntity.getUpdatedAt())
+                .build();
     }
 }

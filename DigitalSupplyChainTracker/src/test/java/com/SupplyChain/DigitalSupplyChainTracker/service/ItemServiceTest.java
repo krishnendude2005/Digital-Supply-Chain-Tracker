@@ -3,6 +3,7 @@ package com.SupplyChain.DigitalSupplyChainTracker.service;
 
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.AddItemRequest;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.ItemUpdateRequest;
+import com.SupplyChain.DigitalSupplyChainTracker.dto.response.ItemResponse;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.Item;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.UserEntity;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.enums.Role;
@@ -123,7 +124,7 @@ class ItemServiceTest {
 
         when(itemRepo.findAll()).thenReturn(items);
 
-        List<Item> result = itemService.getAllItems(authentication);
+        List<ItemResponse> result = itemService.getAllItems(authentication);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -141,7 +142,7 @@ class ItemServiceTest {
 
         when(itemRepo.findBySupplier_EmailIgnoreCase("supplier1@example.com")).thenReturn(items);
 
-        List<Item> result = itemService.getAllItems(authentication);
+        List<ItemResponse> result = itemService.getAllItems(authentication);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -154,7 +155,7 @@ class ItemServiceTest {
         Authentication authentication =
                 new UsernamePasswordAuthenticationToken("transporter1@example.com", null, authorities);
 
-        List<Item> result = itemService.getAllItems(authentication);
+        List<ItemResponse> result = itemService.getAllItems(authentication);
 
         assertNotNull(result);
         assertEquals(0, result.size());
@@ -169,12 +170,12 @@ class ItemServiceTest {
         when(userRepo.findByEmail("supplier1@example.com")).thenReturn(Optional.of(supplierUser));
         when(itemRepo.save(any(Item.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Item result = itemService.addItem(addItemRequest);
+        ItemResponse result = itemService.addItem(addItemRequest);
 
         assertNotNull(result);
         assertEquals("Test Item", result.getName());
         assertEquals("Electronics", result.getCategory());
-        assertEquals(supplierUser, result.getSupplier());
+        assertEquals(supplierUser.getEmail(), result.getSupplierEmail());
 
         verify(userRepo).findByEmail("supplier1@example.com");
         verify(itemRepo).save(any(Item.class));
@@ -198,12 +199,12 @@ class ItemServiceTest {
         when(userRepo.findByEmail("admin@gmail.com")).thenReturn(Optional.of(adminUser));
         when(itemRepo.save(any(Item.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Item result = itemService.updateItem(updateItemRequest, itemId);
+        ItemResponse result = itemService.updateItem(updateItemRequest, itemId);
 
         assertNotNull(result);
         assertEquals("Updated Test Item", result.getName());
         assertEquals("Updated Electronics", result.getCategory());
-        assertEquals(adminUser, result.getSupplier());
+        assertEquals(adminUser.getEmail(), result.getSupplierEmail());
 
         verify(itemRepo).findByItemId(itemId);
         verify(userRepo).findByEmail("admin@gmail.com");
@@ -263,7 +264,7 @@ class ItemServiceTest {
         when(userRepo.findByEmail("admin@gmail.com")).thenReturn(Optional.of(adminUser));
         when(itemRepo.findByItemId(itemId)).thenReturn(Optional.of(item));
 
-        Item result = itemService.getItemByItemId(itemId);
+        ItemResponse result = itemService.getItemByItemId(itemId);
 
         assertNotNull(result);
         assertEquals("Test Item", result.getName());
@@ -280,7 +281,7 @@ class ItemServiceTest {
         when(itemRepo.findBySupplier_EmailIgnoreCaseAndItemId("supplier1@example.com", itemId))
                 .thenReturn(Optional.of(item));
 
-        Item result = itemService.getItemByItemId(itemId);
+        ItemResponse result = itemService.getItemByItemId(itemId);
 
         assertNotNull(result);
         assertEquals("Test Item", result.getName());
@@ -309,7 +310,7 @@ class ItemServiceTest {
         when(userRepo.findByEmail("admin@gmail.com")).thenReturn(Optional.of(adminUser));
         when(itemRepo.findByCategoryIgnoreCase("Electronics")).thenReturn(List.of(item));
 
-        List<Item> result = itemService.searchedItem("Electronics");
+        List<ItemResponse> result = itemService.searchedItem("Electronics");
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -327,7 +328,7 @@ class ItemServiceTest {
         when(itemRepo.findByCategoryIgnoreCaseAndSupplier_EmailIgnoreCase("Electronics", "supplier1@example.com"))
                 .thenReturn(List.of(item));
 
-        List<Item> result = itemService.searchedItem("Electronics");
+        List<ItemResponse> result = itemService.searchedItem("Electronics");
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -343,7 +344,7 @@ class ItemServiceTest {
         when(userRepo.findByEmail("transporter1@example.com"))
                 .thenReturn(Optional.of(transporterUser));
 
-        List<Item> result = itemService.searchedItem("Electronics");
+        List<ItemResponse> result = itemService.searchedItem("Electronics");
 
         assertNotNull(result);
         assertEquals(0, result.size());

@@ -1,6 +1,7 @@
 package com.SupplyChain.DigitalSupplyChainTracker.service.Impl;
 
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.CreateCheckpointLogRequest;
+import com.SupplyChain.DigitalSupplyChainTracker.dto.response.CheckpointLogResponse;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.response.CreateCheckPointLogResponse;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.CheckpointLog;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.Shipment;
@@ -37,7 +38,7 @@ public class CheckpointLogServiceImpl implements CheckPointLogService {
                 .checkpointId(UUID.randomUUID())
                 .location(location)
                 .itemStatus(itemStatus)
-                .shipment(shipment) //todo: create dto instead of sending direct shipment Entity. (FOR ANY RETURN VALUES -> WRITE DTO -> RETURN DTO , instead of direct ENTITY)
+                .shipment(shipment)
                 .timestamp(LocalDateTime.now())
                 .build();
 
@@ -54,7 +55,19 @@ public class CheckpointLogServiceImpl implements CheckPointLogService {
     }
 
     @Override
-    public List<CheckpointLog> getShipmentLog(UUID shipmentId) {
-      return checkpointLogRepo.findAllByShipment_ShipmentId(shipmentId);
+    public List<CheckpointLogResponse> getShipmentLog(UUID shipmentId) {
+        return checkpointLogRepo.findAllByShipment_ShipmentId(shipmentId).stream()
+                .map(this::convertToCheckpointLogResponse)
+                .toList();
+    }
+
+    private CheckpointLogResponse convertToCheckpointLogResponse(CheckpointLog checkpointLog) {
+        return CheckpointLogResponse.builder()
+                .checkpointId(checkpointLog.getCheckpointId())
+                .location(checkpointLog.getLocation())
+                .itemStatus(checkpointLog.getItemStatus())
+                .shipmentId(checkpointLog.getShipment() != null ? checkpointLog.getShipment().getShipmentId() : null)
+                .timestamp(checkpointLog.getTimestamp())
+                .build();
     }
 }

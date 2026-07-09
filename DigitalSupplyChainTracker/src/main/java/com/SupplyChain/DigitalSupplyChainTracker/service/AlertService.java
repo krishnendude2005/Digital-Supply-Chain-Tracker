@@ -1,11 +1,11 @@
 package com.SupplyChain.DigitalSupplyChainTracker.service;
 
-import com.SupplyChain.DigitalSupplyChainTracker.entity.Alert;
+import com.SupplyChain.DigitalSupplyChainTracker.dto.response.AlertResponse;
 
 import java.util.List;
 import java.util.UUID;
 
 public interface AlertService {
-    List<Alert> findAllAlerts();
-    List<Alert> findAllByShipmentId(UUID shipmentId);
+    List<AlertResponse> findAllAlerts();
+    List<AlertResponse> findAllByShipmentId(UUID shipmentId);
 }

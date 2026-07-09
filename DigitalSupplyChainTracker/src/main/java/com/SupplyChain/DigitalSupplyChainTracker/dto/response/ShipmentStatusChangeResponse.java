@@ -15,7 +15,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ShipmentStatusChangeResponse {
-    public String message;
+    private String message;
     private UUID shipmentId;
     private ShipmentStatus currentStatus;
 }

@@ -3,7 +3,7 @@ package com.SupplyChain.DigitalSupplyChainTracker.controller;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.ChangeRoleRequest;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.UserRegisterRequest;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.response.UserRegisterResponse;
-import com.SupplyChain.DigitalSupplyChainTracker.entity.UserEntity;
+import com.SupplyChain.DigitalSupplyChainTracker.dto.response.UserResponse;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.enums.Role;
 import com.SupplyChain.DigitalSupplyChainTracker.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,13 +16,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -61,7 +61,6 @@ class UserControllerTest {
         response.setRole(Role.ADMIN);
         response.setName("John Doe");
 
-
         when(userService.register(any(UserRegisterRequest.class)))
                 .thenReturn(response);
 
@@ -72,12 +71,10 @@ class UserControllerTest {
                 .andExpect(content().string("User registered successfully"));
     }
 
-
-
     @Test
     void getAllUsers_Success() throws Exception {
-        UserEntity user1 = buildUser("John Doe", "john@example.com", Role.ADMIN);
-        UserEntity user2 = buildUser("Jane Smith", "jane@example.com", Role.SUPPLIER);
+        UserResponse user1 = buildUserResponse("John Doe", "john@example.com", Role.ADMIN);
+        UserResponse user2 = buildUserResponse("Jane Smith", "jane@example.com", Role.SUPPLIER);
 
         when(userService.getAllUsers()).thenReturn(List.of(user1, user2));
 
@@ -96,7 +93,7 @@ class UserControllerTest {
         roleRequest.setEmail("john@example.com");
         roleRequest.setRole(Role.TRANSPORTER);
 
-        UserEntity updatedUser = buildUser("John Doe", "john@example.com", Role.TRANSPORTER);
+        UserResponse updatedUser = buildUserResponse("John Doe", "john@example.com", Role.TRANSPORTER);
 
         when(userService.changeRole(any(ChangeRoleRequest.class))).thenReturn(updatedUser);
 
@@ -109,15 +106,14 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.name", is("John Doe")));
     }
 
-    private UserEntity buildUser(String name, String email, Role role) {
-        return UserEntity.builder()
-                .id(1L)
+    private UserResponse buildUserResponse(String name, String email, Role role) {
+        return UserResponse.builder()
                 .userId(UUID.randomUUID())
                 .name(name)
                 .email(email)
-                .password("encodedPassword")
                 .role(role)
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
                 .build();
     }
 }
-

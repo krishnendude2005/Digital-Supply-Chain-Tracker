@@ -3,6 +3,7 @@ package com.SupplyChain.DigitalSupplyChainTracker.service;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.ChangeRoleRequest;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.UserRegisterRequest;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.response.UserRegisterResponse;
+import com.SupplyChain.DigitalSupplyChainTracker.dto.response.UserResponse;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.UserEntity;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.enums.Role;
 import com.SupplyChain.DigitalSupplyChainTracker.exception.UserNotFoundException;
@@ -80,7 +81,7 @@ class UserServiceTest {
         List<UserEntity> users = List.of(userEntity);
         when(userRepo.findAll()).thenReturn(users);
 
-        List<UserEntity> result = userService.getAllUsers();
+        List<UserResponse> result = userService.getAllUsers();
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -99,7 +100,7 @@ class UserServiceTest {
         when(userRepo.findByEmail("john@example.com")).thenReturn(Optional.of(userEntity));
         when(userRepo.save(any(UserEntity.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        UserEntity result = userService.changeRole(roleRequest);
+        UserResponse result = userService.changeRole(roleRequest);
 
         assertNotNull(result);
         assertEquals(Role.ADMIN, result.getRole());

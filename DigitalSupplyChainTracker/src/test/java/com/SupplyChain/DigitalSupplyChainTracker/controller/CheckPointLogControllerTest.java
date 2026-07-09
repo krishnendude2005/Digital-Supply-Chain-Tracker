@@ -1,8 +1,8 @@
 package com.SupplyChain.DigitalSupplyChainTracker.controller;
 
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.CreateCheckpointLogRequest;
+import com.SupplyChain.DigitalSupplyChainTracker.dto.response.CheckpointLogResponse;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.response.CreateCheckPointLogResponse;
-import com.SupplyChain.DigitalSupplyChainTracker.entity.CheckpointLog;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.enums.ItemStatus;
 import com.SupplyChain.DigitalSupplyChainTracker.service.CheckPointLogService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -72,23 +72,24 @@ class CheckPointLogControllerTest {
                 .andExpect(jsonPath("$.location").value("Kolkata Hub"))
                 .andExpect(jsonPath("$.itemStatus").value("IN_TRANSIT"));
     }
+
     @Test
     void getShipmentLog_shouldReturn200AndCheckpointLogs() throws Exception {
         UUID shipmentId = UUID.randomUUID();
 
-        CheckpointLog log1 = CheckpointLog.builder()
-                .id(1L)
+        CheckpointLogResponse log1 = CheckpointLogResponse.builder()
                 .checkpointId(UUID.randomUUID())
                 .location("Kolkata Hub")
                 .itemStatus(ItemStatus.IN_TRANSIT)
+                .shipmentId(shipmentId)
                 .timestamp(LocalDateTime.now())
                 .build();
 
-        CheckpointLog log2 = CheckpointLog.builder()
-                .id(2L)
+        CheckpointLogResponse log2 = CheckpointLogResponse.builder()
                 .checkpointId(UUID.randomUUID())
                 .location("Delhi Hub")
                 .itemStatus(ItemStatus.DELIVERED)
+                .shipmentId(shipmentId)
                 .timestamp(LocalDateTime.now())
                 .build();
 
@@ -97,12 +98,9 @@ class CheckPointLogControllerTest {
 
         mockMvc.perform(get("/checkpoints/shipment/{shipmentId}", shipmentId))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1))
                 .andExpect(jsonPath("$[0].location").value("Kolkata Hub"))
                 .andExpect(jsonPath("$[0].itemStatus").value("IN_TRANSIT"))
-                .andExpect(jsonPath("$[1].id").value(2))
                 .andExpect(jsonPath("$[1].location").value("Delhi Hub"))
                 .andExpect(jsonPath("$[1].itemStatus").value("DELIVERED"));
     }
 }
-

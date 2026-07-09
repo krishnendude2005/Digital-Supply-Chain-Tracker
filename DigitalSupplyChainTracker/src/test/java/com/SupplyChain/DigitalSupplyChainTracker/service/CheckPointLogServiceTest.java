@@ -1,6 +1,7 @@
 package com.SupplyChain.DigitalSupplyChainTracker.service;
 
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.CreateCheckpointLogRequest;
+import com.SupplyChain.DigitalSupplyChainTracker.dto.response.CheckpointLogResponse;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.response.CreateCheckPointLogResponse;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.CheckpointLog;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.Shipment;
@@ -122,6 +123,7 @@ class CheckPointLogServiceTest {
         verify(shipmentRepo).findByShipmentId(shipmentId);
         verify(checkpointLogRepo).save(any(CheckpointLog.class));
     }
+
     @Test
     void getShipmentLog_shouldReturnCheckpointLogs() {
         UUID shipmentId = UUID.randomUUID();
@@ -157,7 +159,7 @@ class CheckPointLogServiceTest {
 
         when(checkpointLogRepo.findAllByShipment_ShipmentId(shipmentId)).thenReturn(expectedLogs);
 
-        List<CheckpointLog> result = checkpointLogService.getShipmentLog(shipmentId);
+        List<CheckpointLogResponse> result = checkpointLogService.getShipmentLog(shipmentId);
 
         assertNotNull(result);
         assertEquals(2, result.size());

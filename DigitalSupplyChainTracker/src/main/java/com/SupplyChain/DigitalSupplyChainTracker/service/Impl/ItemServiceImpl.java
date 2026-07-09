@@ -2,6 +2,7 @@ package com.SupplyChain.DigitalSupplyChainTracker.service.Impl;
 
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.AddItemRequest;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.ItemUpdateRequest;
+import com.SupplyChain.DigitalSupplyChainTracker.dto.response.ItemResponse;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.Item;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.UserEntity;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.enums.Role;
@@ -12,13 +13,10 @@ import com.SupplyChain.DigitalSupplyChainTracker.repository.ShipmentRepo;
 import com.SupplyChain.DigitalSupplyChainTracker.repository.UserRepo;
 import com.SupplyChain.DigitalSupplyChainTracker.service.ItemService;
 import lombok.RequiredArgsConstructor;
-import org.apache.catalina.User;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
@@ -32,28 +30,12 @@ public class ItemServiceImpl implements ItemService {
     private final ShipmentRepo shipmentRepo;
 
     @Override
-    public List<Item> getAllItems(Authentication authentication) {
+    public List<ItemResponse> getAllItems(Authentication authentication) {
 
         //Authentication validation
         if (authentication == null || !authentication.isAuthenticated()) {
             return List.of();
         }
-
-        //Extract the user's role and email from the authentication object
-//        List<String> roles = authentication.getAuthorities()
-//                .stream()
-//                .map(item -> item.getAuthority())
-//                .toList();
-
-        // Based on the user's role, fetch items from the appropriate repository
-//        if (roles.contains(("ROLE_" + Role.ADMIN.name()))) {
-//            return itemRepo.findAll();
-//        }
-//
-//        if (roles.contains("ROLE_" + Role.SUPPLIER.name())) {
-//            String supplier = authentication.getName();
-//            return itemRepo.findBySupplier(supplier);
-//        }
 
         String authority = authentication.getAuthorities()
                 .iterator()
@@ -63,23 +45,23 @@ public class ItemServiceImpl implements ItemService {
 
         switch (authority) {
             case "ROLE_ADMIN":
-                return itemRepo.findAll();
+                return itemRepo.findAll().stream()
+                        .map(this::convertToItemResponse)
+                        .toList();
 
             case "ROLE_SUPPLIER":
                 String supplierEmail = authentication.getName();
-                return itemRepo.findBySupplier_EmailIgnoreCase(supplierEmail);
-
+                return itemRepo.findBySupplier_EmailIgnoreCase(supplierEmail).stream()
+                        .map(this::convertToItemResponse)
+                        .toList();
 
             default:
                 return List.of();
-
         }
-
-
     }
 
     @Override
-    public Item addItem(AddItemRequest item) {
+    public ItemResponse addItem(AddItemRequest item) {
 
         //Get the supplier from DB. Using the Currently logged-in user
         String currentLoggedInUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -95,12 +77,12 @@ public class ItemServiceImpl implements ItemService {
                 .supplier(currentLoggedInUser)
                 .build();
 
-        return itemRepo.save(itemToSave);
-
+        Item savedItem = itemRepo.save(itemToSave);
+        return convertToItemResponse(savedItem);
     }
 
     @Override
-    public Item updateItem(ItemUpdateRequest updateRequest, UUID itemId) {
+    public ItemResponse updateItem(ItemUpdateRequest updateRequest, UUID itemId) {
         Item itemToUpdate = itemRepo.findByItemId(itemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Item not found with id: " + itemId));
 
@@ -111,8 +93,8 @@ public class ItemServiceImpl implements ItemService {
         itemToUpdate.setCategory(updateRequest.getCategory());
         itemToUpdate.setSupplier(updatedSupplier);
 
-        return itemRepo.save(itemToUpdate);
-
+        Item updatedItem = itemRepo.save(itemToUpdate);
+        return convertToItemResponse(updatedItem);
     }
 
     @Override
@@ -131,25 +113,26 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Item getItemByItemId(UUID itemId) {
+    public ItemResponse getItemByItemId(UUID itemId) {
 
         //Admin can view all items
 
         //Give result according to the role of the user
         String currentLoggedInUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
 
+        Item item;
         if(userRepo.findByEmail(currentLoggedInUserEmail).get().getRole() == Role.ADMIN) {
-            return itemRepo.findByItemId(itemId)
+            item = itemRepo.findByItemId(itemId)
                     .orElseThrow(() -> new ResourceNotFoundException("Item not found with id: " + itemId));
         } else {
-
-            return itemRepo.findBySupplier_EmailIgnoreCaseAndItemId(currentLoggedInUserEmail, itemId).orElseThrow(() ->
+            item = itemRepo.findBySupplier_EmailIgnoreCaseAndItemId(currentLoggedInUserEmail, itemId).orElseThrow(() ->
                     new ResourceNotFoundException("Item not found with id: " + itemId));
         }
+        return convertToItemResponse(item);
     }
 
     @Override
-    public List<Item> searchedItem(String category) {
+    public List<ItemResponse> searchedItem(String category) {
         String currentLoggedInUserEmail =
                 SecurityContextHolder.getContext().getAuthentication().getName();
 
@@ -159,16 +142,31 @@ public class ItemServiceImpl implements ItemService {
 
         switch (currentLoggedInUser.getRole()) {
             case ADMIN:
-                return itemRepo.findByCategoryIgnoreCase(category);
+                return itemRepo.findByCategoryIgnoreCase(category).stream()
+                        .map(this::convertToItemResponse)
+                        .toList();
 
             case SUPPLIER:
                 return itemRepo.findByCategoryIgnoreCaseAndSupplier_EmailIgnoreCase(
-                        category, currentLoggedInUserEmail);
+                        category, currentLoggedInUserEmail).stream()
+                        .map(this::convertToItemResponse)
+                        .toList();
 
             default:
                 return Collections.emptyList();
         }
     }
 
-
+    private ItemResponse convertToItemResponse(Item item) {
+        return ItemResponse.builder()
+                .itemId(item.getItemId())
+                .name(item.getName())
+                .category(item.getCategory())
+                .supplierEmail(item.getSupplier() != null ? item.getSupplier().getEmail() : null)
+                .supplierName(item.getSupplier() != null ? item.getSupplier().getName() : null)
+                .supplierRole(item.getSupplier() != null ? item.getSupplier().getRole() : null)
+                .createdAt(item.getCreatedAt())
+                .updatedAt(item.getUpdatedAt())
+                .build();
+    }
 }

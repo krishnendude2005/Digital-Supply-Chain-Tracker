@@ -2,8 +2,7 @@ package com.SupplyChain.DigitalSupplyChainTracker.controller;
 
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.AddItemRequest;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.ItemUpdateRequest;
-import com.SupplyChain.DigitalSupplyChainTracker.entity.Item;
-import com.SupplyChain.DigitalSupplyChainTracker.entity.UserEntity;
+import com.SupplyChain.DigitalSupplyChainTracker.dto.response.ItemResponse;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.enums.Role;
 import com.SupplyChain.DigitalSupplyChainTracker.service.ItemService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,7 +32,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -56,10 +54,8 @@ class ItemControllerTest {
 
     @Test
     void getItems_Supplier_Success() throws Exception {
-        UserEntity supplier = buildUser("supplier1@example.com", Role.SUPPLIER);
-
-        Item item1 = buildItem("Laptop", "Electronics", supplier);
-        Item item2 = buildItem("Mouse", "Electronics", supplier);
+        ItemResponse item1 = buildItemResponse("Laptop", "Electronics", "supplier1@example.com");
+        ItemResponse item2 = buildItemResponse("Mouse", "Electronics", "supplier1@example.com");
 
         when(itemService.getAllItems(any())).thenReturn(List.of(item1, item2));
 
@@ -71,10 +67,8 @@ class ItemControllerTest {
 
     @Test
     void getItems_Admin_Success() throws Exception {
-        UserEntity admin = buildUser("admin@example.com", Role.ADMIN);
-
-        Item item1 = buildItem("Laptop", "Electronics", admin);
-        Item item2 = buildItem("Mouse", "Electronics", admin);
+        ItemResponse item1 = buildItemResponse("Laptop", "Electronics", "admin@example.com");
+        ItemResponse item2 = buildItemResponse("Mouse", "Electronics", "admin@example.com");
 
         when(itemService.getAllItems(any())).thenReturn(List.of(item1, item2));
 
@@ -100,8 +94,7 @@ class ItemControllerTest {
         addItemRequest.setName("Laptop");
         addItemRequest.setCategory("Electronics");
 
-        UserEntity supplier = buildUser("supplier1@example.com", Role.SUPPLIER);
-        Item savedItem = buildItem("Laptop", "Electronics", supplier);
+        ItemResponse savedItem = buildItemResponse("Laptop", "Electronics", "supplier1@example.com");
 
         when(itemService.addItem(any(AddItemRequest.class))).thenReturn(savedItem);
 
@@ -118,8 +111,7 @@ class ItemControllerTest {
         addItemRequest.setName("Laptop");
         addItemRequest.setCategory("Electronics");
 
-        UserEntity admin = buildUser("admin@gmail.com", Role.ADMIN);
-        Item savedItem = buildItem("Laptop", "Electronics", admin);
+        ItemResponse savedItem = buildItemResponse("Laptop", "Electronics", "admin@gmail.com");
 
         when(itemService.addItem(any(AddItemRequest.class))).thenReturn(savedItem);
 
@@ -132,7 +124,6 @@ class ItemControllerTest {
 
     @Test
     void updateItem_Success() throws Exception {
-        UserEntity supplier = buildUser("supplier1@example.com", Role.SUPPLIER);
         UUID itemId = UUID.randomUUID();
 
         ItemUpdateRequest updateRequest = new ItemUpdateRequest();
@@ -140,12 +131,11 @@ class ItemControllerTest {
         updateRequest.setCategory("Updated Electronics");
         updateRequest.setSupplierEmail("supplier1@example.com");
 
-        Item updatedItem = Item.builder()
-                .id(1L)
+        ItemResponse updatedItem = ItemResponse.builder()
                 .itemId(itemId)
                 .name("Updated Laptop")
                 .category("Updated Electronics")
-                .supplier(supplier)
+                .supplierEmail("supplier1@example.com")
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
@@ -159,8 +149,6 @@ class ItemControllerTest {
                 .andExpect(status().isOk());
     }
 
-
-
     @Test
     void deleteItem_Success() throws Exception {
         UUID itemId = UUID.randomUUID();
@@ -171,18 +159,12 @@ class ItemControllerTest {
                         .param("itemId", itemId.toString())
                         .with(authentication(auth("supplier1@example.com", "SUPPLIER"))))
                 .andExpect(status().isNoContent());
-        // If your controller actually returns a message body like "item deleted successfully",
-        // change this to:
-        // .andExpect(status().isOk())
-        // .andExpect(content().string("item deleted successfully"));
     }
 
     @Test
     void searchItems_Success() throws Exception {
-        UserEntity supplier = buildUser("supplier1@example.com", Role.SUPPLIER);
-
-        Item item1 = buildItem("Laptop", "Electronics", supplier);
-        Item item2 = buildItem("Phone", "Electronics", supplier);
+        ItemResponse item1 = buildItemResponse("Laptop", "Electronics", "supplier1@example.com");
+        ItemResponse item2 = buildItemResponse("Phone", "Electronics", "supplier1@example.com");
 
         when(itemService.searchedItem("Electronics")).thenReturn(List.of(item1, item2));
 
@@ -195,10 +177,10 @@ class ItemControllerTest {
 
     @Test
     void getItemMetrics_Success() throws Exception {
-        UserEntity supplier = buildUser("supplier1@example.com", Role.SUPPLIER);
-        Item savedItem = buildItem("Laptop", "Electronics", supplier);
+        UUID itemId = UUID.randomUUID();
+        ItemResponse savedItem = buildItemResponse("Laptop", "Electronics", "supplier1@example.com");
+        savedItem.setItemId(itemId);
 
-        UUID itemId = savedItem.getItemId();
         when(itemService.getItemByItemId(itemId)).thenReturn(savedItem);
 
         mockMvc.perform(get("/items/{itemId}", itemId)
@@ -216,27 +198,14 @@ class ItemControllerTest {
         );
     }
 
-    private UserEntity buildUser(String email, Role role) {
-        return UserEntity.builder()
-                .id(1L)
-                .userId(UUID.randomUUID())
-                .name(role.name() + " User")
-                .email(email)
-                .password("encodedPassword")
-                .role(role)
-                .build();
-    }
-
-    private Item buildItem(String name, String category, UserEntity supplier) {
-        return Item.builder()
-                .id(1L)
+    private ItemResponse buildItemResponse(String name, String category, String supplierEmail) {
+        return ItemResponse.builder()
                 .itemId(UUID.randomUUID())
                 .name(name)
                 .category(category)
-                .supplier(supplier)
+                .supplierEmail(supplierEmail)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
     }
 }
-

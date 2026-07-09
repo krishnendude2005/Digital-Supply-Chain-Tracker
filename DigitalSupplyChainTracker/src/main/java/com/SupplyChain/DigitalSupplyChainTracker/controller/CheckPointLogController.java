@@ -1,14 +1,15 @@
 package com.SupplyChain.DigitalSupplyChainTracker.controller;
 
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.CreateCheckpointLogRequest;
+import com.SupplyChain.DigitalSupplyChainTracker.dto.response.CheckpointLogResponse;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.response.CreateCheckPointLogResponse;
 import com.SupplyChain.DigitalSupplyChainTracker.service.CheckPointLogService;
-import com.SupplyChain.DigitalSupplyChainTracker.service.Impl.CheckpointLogServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -28,6 +29,7 @@ public class CheckPointLogController {
 
     @GetMapping("/shipment/{shipmentId}")
     public ResponseEntity<?> getShipmentLog(@PathVariable UUID shipmentId) {
-        return ResponseEntity.status(HttpStatus.OK).body(checkPointLogService.getShipmentLog(shipmentId));
+        List<CheckpointLogResponse> logs = checkPointLogService.getShipmentLog(shipmentId);
+        return ResponseEntity.status(HttpStatus.OK).body(logs);
     }
 }

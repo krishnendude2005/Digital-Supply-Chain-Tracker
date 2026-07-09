@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+    <!-- Suppress EI_EXPOSE_REP/EI_EXPOSE_REP2 for JPA entities: JPA framework requires direct mutable object access for lazy loading and relationship management -->
+    <Match>
+        <Package name="~com\.SupplyChain\.DigitalSupplyChainTracker\.entity.*"/>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+    </Match>
+
+    <!-- Suppress EI_EXPOSE_REP for DTO classes: simple data transfer objects where defensive copying adds overhead without security benefit -->
+    <Match>
+        <Package name="~com\.SupplyChain\.DigitalSupplyChainTracker\.dto\.response.*"/>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+    </Match>
+
+    <!-- Suppress EI_EXPOSE_REP2 for Spring beans: Spring manages bean lifecycle; constructor injection is standard practice -->
+    <Match>
+        <Or>
+            <Package name="~com\.SupplyChain\.DigitalSupplyChainTracker\.controller.*"/>
+            <Package name="~com\.SupplyChain\.DigitalSupplyChainTracker\.security.*"/>
+            <Package name="~com\.SupplyChain\.DigitalSupplyChainTracker\.service\.Impl.*"/>
+        </Or>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+</FindBugsFilter>

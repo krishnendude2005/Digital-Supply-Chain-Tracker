@@ -15,8 +15,8 @@ import java.util.Date;
 
 @Component
 public class JwtUtils {
-    private final String SECRET_KEY = "mysecretkeyandthisisheretomakeitlengthyveryverylengthy";
-    private final int EXPIRATION_TIME = 60 * 60 * 1000;
+    private static final String SECRET_KEY = "mysecretkeyandthisisheretomakeitlengthyveryverylengthy";
+    private static final int EXPIRATION_TIME = 60 * 60 * 1000;
 
     private SecretKey getSignInKey() {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(SECRET_KEY));

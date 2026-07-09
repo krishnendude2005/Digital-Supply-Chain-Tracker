@@ -2,18 +2,15 @@ package com.SupplyChain.DigitalSupplyChainTracker.controller;
 
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.ChangeRoleRequest;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.UserRegisterRequest;
-import com.SupplyChain.DigitalSupplyChainTracker.entity.UserEntity;
-import com.SupplyChain.DigitalSupplyChainTracker.service.Impl.UserServiceImpl;
+import com.SupplyChain.DigitalSupplyChainTracker.dto.response.UserResponse;
 import com.SupplyChain.DigitalSupplyChainTracker.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -38,7 +35,7 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping()
     public ResponseEntity<?> getAllUsers() {
-        List<UserEntity> allUsers = userService.getAllUsers();
+        List<UserResponse> allUsers = userService.getAllUsers();
         return ResponseEntity.status(HttpStatus.OK).body(allUsers);
     }
 
@@ -46,7 +43,7 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/admin/role")
     public ResponseEntity<?> changeRole(@RequestBody ChangeRoleRequest newRole) {
-        UserEntity changedRoleUser = userService.changeRole(newRole);
+        UserResponse changedRoleUser = userService.changeRole(newRole);
 
         return ResponseEntity.status(HttpStatus.OK).body(changedRoleUser);
     }
