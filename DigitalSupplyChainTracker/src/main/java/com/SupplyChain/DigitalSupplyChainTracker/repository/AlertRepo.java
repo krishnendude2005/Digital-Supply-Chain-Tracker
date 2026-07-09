@@ -14,4 +14,6 @@ public interface AlertRepo extends JpaRepository<Alert, Long> {
 
     //this method - prevents duplicate alerts every time cron runs.
     boolean existsByCheckpointLog_Shipment_ShipmentIdAndTypeAndResolvedFalse(UUID shipmentId, AlertType type);
+
+    List<Alert> findAllByType(AlertType type);
 }

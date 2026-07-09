@@ -2,6 +2,7 @@ package com.SupplyChain.DigitalSupplyChainTracker.service.Impl;
 
 import com.SupplyChain.DigitalSupplyChainTracker.dto.response.AlertResponse;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.Alert;
+import com.SupplyChain.DigitalSupplyChainTracker.entity.enums.AlertType;
 import com.SupplyChain.DigitalSupplyChainTracker.repository.AlertRepo;
 import com.SupplyChain.DigitalSupplyChainTracker.service.AlertService;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +32,16 @@ public class AlertServiceImpl implements AlertService {
         return alertRepo.findAllByCheckpointLog_Shipment_ShipmentId(shipmentId).stream()
                 .map(this::convertToAlertResponse)
                 .toList();
+    }
+
+    @Override
+    @PreAuthorize("hasRole('ADMIN')")
+    public List<AlertResponse> findAllByAlertType(AlertType alertType) {
+        return
+                alertRepo.findAllByType(alertType)
+                        .stream()
+                        .map(this::convertToAlertResponse)
+                        .toList();
     }
 
     private AlertResponse convertToAlertResponse(Alert alert) {

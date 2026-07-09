@@ -1,14 +1,12 @@
 package com.SupplyChain.DigitalSupplyChainTracker.controller;
 
 import com.SupplyChain.DigitalSupplyChainTracker.dto.response.AlertResponse;
+import com.SupplyChain.DigitalSupplyChainTracker.entity.enums.AlertType;
 import com.SupplyChain.DigitalSupplyChainTracker.service.AlertService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.UUID;
@@ -30,5 +28,10 @@ public class AlertController {
     public ResponseEntity<?> getAllForShipment(@PathVariable UUID shipmentId) {
         List<AlertResponse> alerts = alertService.findAllByShipmentId(shipmentId);
         return ResponseEntity.status(HttpStatus.OK).body(alerts);
+    }
+
+    @GetMapping(params = "alertType")
+    public  ResponseEntity<?> getAlertsByAlertType(@RequestParam AlertType alertType) {
+        return ResponseEntity.status(HttpStatus.OK).body(alertService.findAllByAlertType(alertType));
     }
 }
