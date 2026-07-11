@@ -76,5 +76,4 @@ public class ItemController {
         ItemResponse item = itemService.getItemByItemId(itemId);
         return ResponseEntity.status(HttpStatus.OK).body(item);
     }
-
 }

@@ -1,4 +1,4 @@
-package com.SupplyChain.DigitalSupplyChainTracker.scheduler;
+package com.SupplyChain.DigitalSupplyChainTracker.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,4 +1,4 @@
-package com.SupplyChain.DigitalSupplyChainTracker.scheduler;
+package com.SupplyChain.DigitalSupplyChainTracker.scheduler.service;
 
 import com.SupplyChain.DigitalSupplyChainTracker.entity.Alert;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.CheckpointLog;
