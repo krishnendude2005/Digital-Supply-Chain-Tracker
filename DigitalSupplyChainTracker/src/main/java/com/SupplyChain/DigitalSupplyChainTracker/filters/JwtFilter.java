@@ -21,8 +21,8 @@ import java.io.IOException;
 public class JwtFilter extends OncePerRequestFilter {
 
     private final CustomUserDetailsService customUserDetailsService;
+    private final JwtUtils jwtUtils;
 
-private final JwtUtils jwtUtils;
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         final String jwtToken;
@@ -43,12 +43,12 @@ private final JwtUtils jwtUtils;
 
         userEmail = jwtUtils.extractUsername(jwtToken);
         //4. Found Email & User not already logged in
-        if(userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
             UserDetails userDetails = customUserDetailsService.loadUserByUsername(userEmail);
 
             //Validate JWT token
-            if(!jwtUtils.isValidToken(jwtToken, userDetails)) {
+            if (!jwtUtils.isValidToken(jwtToken, userDetails)) {
                 filterChain.doFilter(request, response);
                 return;
             }

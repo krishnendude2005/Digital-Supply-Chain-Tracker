@@ -1,4 +1,4 @@
-package com.SupplyChain.DigitalSupplyChainTracker.security;
+package com.SupplyChain.DigitalSupplyChainTracker.config.security;
 
 import com.SupplyChain.DigitalSupplyChainTracker.filters.JwtFilter;
 import com.SupplyChain.DigitalSupplyChainTracker.service.Impl.CustomUserDetailsService;
