@@ -33,6 +33,7 @@ public class Alert {
     private AlertType type;
     private String message;
 
-    private Boolean resolved;
+    @Builder.Default
+    private Boolean resolved = false;
 
 }
