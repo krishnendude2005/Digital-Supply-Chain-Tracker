@@ -2,7 +2,6 @@ package com.SupplyChain.DigitalSupplyChainTracker.controller;
 
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.AddItemRequest;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.request.ItemUpdateRequest;
-import com.SupplyChain.DigitalSupplyChainTracker.dto.response.AddItem;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.response.ItemResponse;
 import com.SupplyChain.DigitalSupplyChainTracker.dto.response.ItemUpdateResponse;
 import com.SupplyChain.DigitalSupplyChainTracker.service.ItemService;

@@ -4,12 +4,14 @@ import com.SupplyChain.DigitalSupplyChainTracker.entity.UserEntity;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.enums.Role;
 import com.SupplyChain.DigitalSupplyChainTracker.repository.UserRepo;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class DatabaseSeeder implements CommandLineRunner {
@@ -32,7 +34,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                     .build();
 
             userRepo.save(systemAdmin);
-            System.out.println("✅ Initial Admin Account Created Successfully!");
+            log.info("Initial Admin Account Created Successfully");
         }
 
         if(userRepo.findByRole(Role.SUPPLIER).isEmpty()) {
@@ -45,7 +47,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                     .role(Role.SUPPLIER)
                     .build();
             userRepo.save(supplier);
-            System.out.println("✅ Initial Supplier Account Created Successfully!");
+            log.info("Initial Supplier Account Created Successfully");
         }
 
         if(userRepo.findByRole(Role.TRANSPORTER).isEmpty()) {
@@ -58,7 +60,7 @@ public class DatabaseSeeder implements CommandLineRunner {
                     .role(Role.TRANSPORTER)
                     .build();
             userRepo.save(transporter);
-            System.out.println("✅ Initial Transporter Account Created Successfully!");
+            log.info("Initial Transporter Account Created Successfully");
         }
     }
 }

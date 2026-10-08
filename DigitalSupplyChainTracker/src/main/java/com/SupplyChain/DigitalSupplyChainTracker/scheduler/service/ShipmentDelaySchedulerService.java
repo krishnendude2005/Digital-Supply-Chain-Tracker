@@ -47,6 +47,7 @@ public class ShipmentDelaySchedulerService {
                         .checkpointLog(checkpointLog)
                         .type(AlertType.DELAYED)
                         .message("Shipment Delayed")
+                        .resolved(false)
                         .build();
 
                 alertRepo.save(newAlert);
