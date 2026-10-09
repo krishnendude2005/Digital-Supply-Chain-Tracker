@@ -5,6 +5,7 @@ import com.SupplyChain.DigitalSupplyChainTracker.entity.CheckpointLog;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.Item;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.Shipment;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.UserEntity;
+import com.SupplyChain.DigitalSupplyChainTracker.entity.enums.AlertType;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.enums.ItemStatus;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.enums.Role;
 import com.SupplyChain.DigitalSupplyChainTracker.entity.enums.ShipmentStatus;
@@ -78,6 +79,95 @@ class AlertRepoTest {
 
         assertNotNull(foundAlerts);
         assertTrue(foundAlerts.isEmpty());
+    }
+
+    @Test
+    void findAllByType_ReturnsOnlyMatchingAlerts() {
+        UserEntity supplier = saveSupplier("supplier2@example.com");
+        Item item = saveItem(supplier, "Phone", "Electronics");
+        Shipment shipment = saveShipment(item, UUID.randomUUID());
+        CheckpointLog checkpointLog = saveCheckpointLog(shipment, "Delhi Hub", ItemStatus.IN_TRANSIT);
+
+        saveAlert(checkpointLog, AlertType.DELAYED, false);
+        saveAlert(checkpointLog, AlertType.DAMAGED, false);
+        saveAlert(checkpointLog, AlertType.DELAYED, false);
+
+        List<Alert> delayedAlerts = alertRepo.findAllByType(AlertType.DELAYED);
+        List<Alert> damagedAlerts = alertRepo.findAllByType(AlertType.DAMAGED);
+
+        assertEquals(2, delayedAlerts.size());
+        assertTrue(delayedAlerts.stream().allMatch(alert -> alert.getType() == AlertType.DELAYED));
+        assertEquals(1, damagedAlerts.size());
+        assertEquals(AlertType.DAMAGED, damagedAlerts.get(0).getType());
+    }
+
+    @Test
+    void findAllByType_NoMatch_ReturnsEmptyList() {
+        List<Alert> alerts = alertRepo.findAllByType(AlertType.DAMAGED);
+
+        assertNotNull(alerts);
+        assertTrue(alerts.isEmpty());
+    }
+
+    @Test
+    void existsByCheckpointLog_Shipment_ShipmentIdAndTypeAndResolvedFalse_UnresolvedAlert_ReturnsTrue() {
+        UserEntity supplier = saveSupplier("supplier3@example.com");
+        Item item = saveItem(supplier, "Tablet", "Electronics");
+        UUID shipmentId = UUID.randomUUID();
+        Shipment shipment = saveShipment(item, shipmentId);
+        CheckpointLog checkpointLog = saveCheckpointLog(shipment, "Mumbai Hub", ItemStatus.IN_TRANSIT);
+
+        saveAlert(checkpointLog, AlertType.DELAYED, false);
+
+        boolean exists = alertRepo.existsByCheckpointLog_Shipment_ShipmentIdAndTypeAndResolvedFalse(
+                shipmentId, AlertType.DELAYED);
+
+        assertTrue(exists);
+    }
+
+    @Test
+    void existsByCheckpointLog_Shipment_ShipmentIdAndTypeAndResolvedFalse_ResolvedAlert_ReturnsFalse() {
+        UserEntity supplier = saveSupplier("supplier4@example.com");
+        Item item = saveItem(supplier, "Monitor", "Electronics");
+        UUID shipmentId = UUID.randomUUID();
+        Shipment shipment = saveShipment(item, shipmentId);
+        CheckpointLog checkpointLog = saveCheckpointLog(shipment, "Chennai Hub", ItemStatus.IN_TRANSIT);
+
+        saveAlert(checkpointLog, AlertType.DELAYED, true);
+
+        boolean exists = alertRepo.existsByCheckpointLog_Shipment_ShipmentIdAndTypeAndResolvedFalse(
+                shipmentId, AlertType.DELAYED);
+
+        assertFalse(exists);
+    }
+
+    @Test
+    void existsByCheckpointLog_Shipment_ShipmentIdAndTypeAndResolvedFalse_DifferentType_ReturnsFalse() {
+        UserEntity supplier = saveSupplier("supplier5@example.com");
+        Item item = saveItem(supplier, "Keyboard", "Electronics");
+        UUID shipmentId = UUID.randomUUID();
+        Shipment shipment = saveShipment(item, shipmentId);
+        CheckpointLog checkpointLog = saveCheckpointLog(shipment, "Pune Hub", ItemStatus.IN_TRANSIT);
+
+        saveAlert(checkpointLog, AlertType.DAMAGED, false);
+
+        boolean exists = alertRepo.existsByCheckpointLog_Shipment_ShipmentIdAndTypeAndResolvedFalse(
+                shipmentId, AlertType.DELAYED);
+
+        assertFalse(exists);
+    }
+
+    private Alert saveAlert(CheckpointLog checkpointLog, AlertType type, boolean resolved) {
+        Alert alert = Alert.builder()
+                .alertId(UUID.randomUUID())
+                .message(type + " alert")
+                .type(type)
+                .resolved(resolved)
+                .checkpointLog(checkpointLog)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        return alertRepo.save(alert);
     }
 
     private UserEntity saveSupplier(String email) {
