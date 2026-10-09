@@ -2,6 +2,7 @@ package com.SupplyChain.DigitalSupplyChainTracker.filters;
 
 import com.SupplyChain.DigitalSupplyChainTracker.Utils.JwtUtils;
 import com.SupplyChain.DigitalSupplyChainTracker.service.Impl.CustomUserDetailsService;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -41,7 +42,17 @@ public class JwtFilter extends OncePerRequestFilter {
         jwtToken = authHeader.substring(7);
 
 
-        userEmail = jwtUtils.extractUsername(jwtToken);
+        try {
+            userEmail = jwtUtils.extractUsername(jwtToken);
+        } catch (ExpiredJwtException ex) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write(
+                    "{\"message\":\"Token expired. Please log in again.\"}"
+            );
+            return;
+        }
+
         //4. Found Email & User not already logged in
         if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
