@@ -9,14 +9,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
-import java.security.Key;
+import java.time.Instant;
 import java.util.Date;
-
 @Component
 public class JwtUtils {
     private static final String SECRET_KEY = "mysecretkeyandthisisheretomakeitlengthyveryverylengthy";
     private static final int EXPIRATION_TIME = 60 * 60 * 1000;
+    private final Instant now = Instant.now();
 
     private SecretKey getSignInKey() {
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(SECRET_KEY));
@@ -28,13 +27,13 @@ public class JwtUtils {
 
         return Jwts.builder()
                 .subject(username)
-                .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusSeconds(EXPIRATION_TIME)))
                 .signWith(getSignInKey())
                 .compact();
     }
 
-    public Boolean isValidToken(String token, UserDetails userDetails) {
+    public boolean isValidToken(String token, UserDetails userDetails) {
         String username = extractUsername(token);
 
         return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
@@ -52,7 +51,7 @@ public class JwtUtils {
                 .getPayload();
     }
 
-    public Boolean isTokenExpired(String token) {
+    public boolean isTokenExpired(String token) {
         return getExpirationDate(token).before(new Date());
     }
     private Date getExpirationDate(String token) {
