@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,7 +29,7 @@ public class ShipmentDelaySchedulerService {
     @Transactional
     public void scanAndCreateShipmentDelayAlerts() {
 
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("UTC"));
 
         //get all the delayed shipments
         List<Shipment> delayedShipments = shipmentRepo.findByShipmentExpectedDateBeforeAndCurrentStatus(now, ShipmentStatus.IN_TRANSIT);

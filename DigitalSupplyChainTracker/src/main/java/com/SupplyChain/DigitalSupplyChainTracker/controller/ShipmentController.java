@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -22,7 +23,7 @@ public class ShipmentController {
     private final ShipmentService shipmentService;
 
     @PostMapping
-    public ResponseEntity<?> createShipment(@RequestBody ShipmentRequest shipmentRequest) {
+    public ResponseEntity<ShipmentResponse> createShipment(@RequestBody ShipmentRequest shipmentRequest) {
 
        ShipmentResponse newlyCreatedShipment = shipmentService.createShipment(shipmentRequest);
 
@@ -32,7 +33,7 @@ public class ShipmentController {
     }
 
     @PostMapping("/{shipmentId}/assign")
-    public ResponseEntity<?> assignShipment(@RequestBody TransporterToAssignRequest transporterToAssign, @PathVariable UUID shipmentId) {
+    public ResponseEntity<ShipmentResponse> assignShipment(@RequestBody TransporterToAssignRequest transporterToAssign, @PathVariable UUID shipmentId) {
 
        ShipmentResponse assignedShipment =  shipmentService.assignTransporter(transporterToAssign, shipmentId);
 
@@ -40,12 +41,12 @@ public class ShipmentController {
     }
 
     @GetMapping
-    public ResponseEntity<?> getAllShipments() {
+    public ResponseEntity<List<ShipmentResponse>> getAllShipments() {
         return ResponseEntity.status(HttpStatus.OK).body(shipmentService.getAllShipments());
     }
 
     @PutMapping("/{shipmentId}/status")
-    public ResponseEntity<?> changeShipmentStatus(@PathVariable UUID shipmentId, @RequestBody ShipmentStatusChangeRequest statusChangeRequest) {
+    public ResponseEntity<ShipmentStatusChangeResponse> changeShipmentStatus(@PathVariable UUID shipmentId, @RequestBody ShipmentStatusChangeRequest statusChangeRequest) {
 
         ShipmentStatusChangeResponse response = shipmentService.changeShipmentStatus(shipmentId, statusChangeRequest.getStatus());
 
