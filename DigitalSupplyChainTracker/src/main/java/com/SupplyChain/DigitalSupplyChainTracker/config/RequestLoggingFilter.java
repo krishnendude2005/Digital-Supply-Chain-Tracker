@@ -15,20 +15,30 @@ import java.io.IOException;
 public class RequestLoggingFilter extends OncePerRequestFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(RequestLoggingFilter.class);
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        long startTime = System.currentTimeMillis();
+        long startTime = System.nanoTime();
 
-        filterChain.doFilter(request, response);
+        try {
+            filterChain.doFilter(request, response);
+        } finally {
+            long durationMs = (System.nanoTime() - startTime) / 1_000_000;
+            int status = response.getStatus();
+            String method = request.getMethod();
+            String uri = request.getRequestURI();
 
-        long duration = System.currentTimeMillis() - startTime;
+            String message = String.format("%s %s - status=%d - duration=%d ms", method, uri, status, durationMs);
 
-        logger.info(
-                "{} {} {} {}ms",
-                request.getMethod(),
-                request.getRequestURI(),
-                response.getStatus(),
-                duration
-        );
+            if (status >= 500) {
+                logger.error(message);
+            } else if (status == 401 || status == 403) {
+                logger.warn(message);
+            } else if (status >= 400) {
+                logger.warn(message);
+            } else {
+                logger.info(message);
+            }
+        }
     }
 }
